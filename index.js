@@ -17,7 +17,7 @@ var sanitize = function(val) {
   return val;
 };
 
-module.exports = function() {
+var middleware = function() {
   return function(req, res, next) {
     ['body', 'params', 'query'].forEach(function(k) {
       if(req[k]) {
@@ -27,3 +27,6 @@ module.exports = function() {
     next();
   };
 };
+
+module.exports = middleware;
+module.exports.sanitize = sanitize;
