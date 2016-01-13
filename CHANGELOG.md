@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.2.0] - 2016-01-13
+### Added
+
+- A new option `replaceWith` which can be used to replace offending characters in a key. This is an alternative to removing the data from the payload.
+
 ## [1.1.0] - 2016-01-13
 ### Added
 - The middleware also now sanitizes keys with a `.`. This is in line with Mongo's reserved operators.
@@ -10,4 +15,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Initial Release.
 
+[1.2.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.0.0...v1.1.0
