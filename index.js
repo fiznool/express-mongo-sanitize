@@ -1,29 +1,52 @@
 'use strict';
 
-var sanitize = function(val) {
-  if(Array.isArray(val)) {
-    val.forEach(sanitize);
+var TEST_REGEX = /^\$|\./,
+    REPLACE_REGEX = /^\$|\./g;
 
-  } else if(val instanceof Object) {
-    Object.keys(val).forEach(function(key) {
-      if (/^\$|\./.test(key)) {
-        delete val[key];
-      } else {
-        sanitize(val[key]);
-      }
-    });
+var sanitize = function(val, options) {
+  options = options || {};
+
+  var replaceWith = null;
+  if(!(TEST_REGEX.test(options.replaceWith))) {
+    replaceWith = options.replaceWith;
   }
 
-  return val;
+  var act = function(val) {
+    if(Array.isArray(val)) {
+      val.forEach(act);
+
+    } else if(val instanceof Object) {
+      Object.keys(val).forEach(function(key) {
+        var v = val[key];
+        var noRecurse = false;
+
+        if(TEST_REGEX.test(key)) {
+          delete val[key];
+          if(replaceWith) {
+            val[key.replace(REPLACE_REGEX, replaceWith)] = v;
+          } else {
+            noRecurse = true;
+          }
+        }
+
+        if(!noRecurse) {
+          act(v);
+        }
+
+      });
+    }
+
+    return val;
+  };
+
+  return act(val);
 };
 
 var middleware = function(options) {
-  options = options || {};
-
   return function(req, res, next) {
     ['body', 'params', 'query'].forEach(function(k) {
       if(req[k]) {
-        req[k] = sanitize(req[k]);
+        req[k] = sanitize(req[k], options);
       }
     });
     next();
