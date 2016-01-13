@@ -26,7 +26,7 @@ describe('Express Mongo Sanitize', function() {
   describe('Top-level object', function() {
     it('should sanitize the query string', function(done) {
       request(app)
-        .get('/query?q=search&$where=malicious')
+        .get('/query?q=search&$where=malicious&dotted.data=some_data')
         .set('Accept', 'application/json')
         .expect(200, {
           query: {
@@ -44,7 +44,8 @@ describe('Express Mongo Sanitize', function() {
           and: 1,
           even: null,
           stop: undefined,
-          $where: 'malicious'
+          $where: 'malicious',
+          'dotted.data': 'some_data'
         })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
@@ -61,7 +62,7 @@ describe('Express Mongo Sanitize', function() {
     it('should sanitize a form url-encoded body', function(done) {
       request(app)
         .post('/body')
-        .send('q=search&$where=malicious')
+        .send('q=search&$where=malicious&dotted.data=some_data')
         .set('Content-Type', 'application/x-www-form-urlencoded')
         .set('Accept', 'application/json')
         .expect(200, {
@@ -75,7 +76,7 @@ describe('Express Mongo Sanitize', function() {
   describe('Nested Object', function() {
     it('should sanitize a nested object in the query string', function(done) {
       request(app)
-        .get('/query?username[$gt]=')
+        .get('/query?username[$gt]=foo&username[dotted.data]=some_data')
         .set('Accept', 'application/json')
         .expect(200, {
           query: {
@@ -88,7 +89,10 @@ describe('Express Mongo Sanitize', function() {
       request(app)
         .post('/body')
         .send({
-          username: { $gt: '' }
+          username: {
+            $gt: 'foo',
+            'dotted.data': 'some_data'
+          }
         })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
@@ -102,7 +106,7 @@ describe('Express Mongo Sanitize', function() {
     it('should sanitize a nested object in a form url-encoded body', function(done) {
       request(app)
         .post('/body')
-        .send('username[$gt]=')
+        .send('username[$gt]=foo&username[dotted.data]=some_data')
         .set('Content-Type', 'application/x-www-form-urlencoded')
         .set('Accept', 'application/json')
         .expect(200, {
@@ -116,7 +120,7 @@ describe('Express Mongo Sanitize', function() {
   describe('Nested Object inside an Array', function() {
     it('should sanitize a nested object in the query string', function(done) {
       request(app)
-        .get('/query?username[0][$gt]=')
+        .get('/query?username[0][$gt]=foo&username[0][dotted.data]=some_data')
         .set('Accept', 'application/json')
         .expect(200, {
           query: {
@@ -129,7 +133,10 @@ describe('Express Mongo Sanitize', function() {
       request(app)
         .post('/body')
         .send({
-          username: [{ $gt: '' }]
+          username: [{
+            $gt: 'foo',
+            'dotted.data': 'some_data'
+          }]
         })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
@@ -143,7 +150,7 @@ describe('Express Mongo Sanitize', function() {
     it('should sanitize a nested object in a form url-encoded body', function(done) {
       request(app)
         .post('/body')
-        .send('username[0][$gt]=')
+        .send('username[0][$gt]=foo&username[0][dotted.data]=some_data')
         .set('Content-Type', 'application/x-www-form-urlencoded')
         .set('Accept', 'application/json')
         .expect(200, {

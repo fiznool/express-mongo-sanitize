@@ -6,7 +6,7 @@ var sanitize = function(val) {
 
   } else if(val instanceof Object) {
     Object.keys(val).forEach(function(key) {
-      if (/^\$/.test(key)) {
+      if (/^\$|\./.test(key)) {
         delete val[key];
       } else {
         sanitize(val[key]);
@@ -17,7 +17,9 @@ var sanitize = function(val) {
   return val;
 };
 
-var middleware = function() {
+var middleware = function(options) {
+  options = options || {};
+
   return function(req, res, next) {
     ['body', 'params', 'query'].forEach(function(k) {
       if(req[k]) {
