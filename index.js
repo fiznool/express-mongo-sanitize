@@ -3,7 +3,40 @@
 var TEST_REGEX = /^\$|\./,
     REPLACE_REGEX = /^\$|\./g;
 
-var sanitize = function(val, options) {
+var withEach = function(target, cb) {
+  var act = function(obj) {
+    if(Array.isArray(obj)) {
+      obj.forEach(act);
+
+    } else if(obj instanceof Object) {
+      Object.keys(obj).forEach(function(key) {
+        var val = obj[key];
+        var shouldRecurse = cb(obj, val, key);
+        if(shouldRecurse) {
+          act(obj[key]);
+        }
+      });
+    }
+  };
+
+  act(target);
+};
+
+var has = function(target) {
+  var hasProhibited = false;
+  withEach(target, function(obj, val, key) {
+    if(TEST_REGEX.test(key)) {
+      hasProhibited = true;
+      return false;
+    } else {
+      return true;
+    }
+  });
+
+  return hasProhibited;
+};
+
+var sanitize = function(target, options) {
   options = options || {};
 
   var replaceWith = null;
@@ -11,35 +44,22 @@ var sanitize = function(val, options) {
     replaceWith = options.replaceWith;
   }
 
-  var act = function(val) {
-    if(Array.isArray(val)) {
-      val.forEach(act);
+  withEach(target, function(obj, val, key) {
+    var shouldRecurse = true;
 
-    } else if(val instanceof Object) {
-      Object.keys(val).forEach(function(key) {
-        var v = val[key];
-        var noRecurse = false;
-
-        if(TEST_REGEX.test(key)) {
-          delete val[key];
-          if(replaceWith) {
-            val[key.replace(REPLACE_REGEX, replaceWith)] = v;
-          } else {
-            noRecurse = true;
-          }
-        }
-
-        if(!noRecurse) {
-          act(v);
-        }
-
-      });
+    if(TEST_REGEX.test(key)) {
+      delete obj[key];
+      if(replaceWith) {
+        obj[key.replace(REPLACE_REGEX, replaceWith)] = val;
+      } else {
+        shouldRecurse = false;
+      }
     }
 
-    return val;
-  };
+    return shouldRecurse;
+  });
 
-  return act(val);
+  return target;
 };
 
 var middleware = function(options) {
@@ -55,3 +75,4 @@ var middleware = function(options) {
 
 module.exports = middleware;
 module.exports.sanitize = sanitize;
+module.exports.has = has;

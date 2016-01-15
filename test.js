@@ -3,6 +3,7 @@
 var request = require('supertest'),
     express = require('express'),
     bodyParser = require('body-parser'),
+    expect = require('chai').expect,
     sanitize = require('./index.js');
 
 describe('Express Mongo Sanitize', function() {
@@ -389,6 +390,91 @@ describe('Express Mongo Sanitize', function() {
             q: 'search'
           }
         }, done);
+    });
+  });
+
+  describe('Has Prohibited Keys', function() {
+    it('should return true if the object has a key beginning with a `$`', function() {
+      var input = {
+        $prohibited: 'key'
+      };
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return true if the object has a key containing a `.`', function() {
+      var input = {
+        'prohibited.key': 'value'
+      };
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return true if the object has a nested key beginning with a `$`', function() {
+      var input = {
+        nested: {
+          $prohibited: 'key'
+        }
+      };
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return true if the object has a nested key containing a `.`', function() {
+      var input = {
+        nested: {
+          'prohibited.key': 'value'
+        }
+      };
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return true if the array contains an object with a key beginning with a `$`', function() {
+      var input = [{
+        $prohibited: 'key'
+      }];
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return true if the array contains an object with a key containing a `.`', function() {
+      var input = [{
+        'prohibited.key': 'value'
+      }];
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return true if the payload contains a deeply nested object with a key beginning with a `$`', function() {
+      var input = [{
+        some: {
+          deeply: [{
+            nested: {
+              $prohibited: 'key'
+            }
+          }]
+        }
+      }];
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return true if the payload contains a deeply nested object with a key containing a `.`', function() {
+      var input = [{
+        some: {
+          deeply: [{
+            nested: {
+              'prohibited..key': 'key'
+            }
+          }]
+        }
+      }];
+      expect(sanitize.has(input)).to.be.true;
+    });
+
+    it('should return false if the payload doesn\'t contain any prohibited characters', function() {
+      var input = {
+        some: {
+          nested: [{
+            data: 'panda'
+          }]
+        }
+      };
+      expect(sanitize.has(input)).to.be.false;
     });
   });
 });

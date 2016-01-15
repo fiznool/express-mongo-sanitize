@@ -38,6 +38,25 @@ app.use(mongoSanitize({
 
 ```
 
+You can also bypass the middleware and use the module directly:
+
+``` js
+var mongoSanitize = require('express-mongo-sanitize');
+
+var payload = {...};
+
+// Remove any keys containing prohibited characters
+mongoSanitize.sanitize(payload);
+
+// Replace any prohibited characters in keys
+mongoSanitize.sanitize(payload, {
+  replaceWith: '_'
+});
+
+// Check if the payload has keys with prohibited characters
+var hasProhibited = mongoSanitize.has(payload);
+```
+
 ## What?
 
 This module searches for any keys in objects that begin with a `$` sign or contain a `.`, from `req.body`, `req.query` or `req.params`. It can then either:
