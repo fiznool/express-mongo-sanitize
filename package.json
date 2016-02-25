@@ -29,11 +29,9 @@
   "homepage": "https://github.com/fiznool/express-mongo-sanitize#readme",
   "devDependencies": {
     "body-parser": "^1.14.1",
+    "chai": "^3.4.1",
     "express": "^4.13.3",
     "mocha": "^2.3.3",
     "supertest": "^1.1.0"
-  },
-  "dependencies": {
-    "chai": "^3.4.1"
   }
 }
