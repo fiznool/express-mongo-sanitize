@@ -2,6 +2,10 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.2] - 2017-01-12
+### Fixed
+- Fixed an issue when using the sanitizer in the node REPL. #3
+
 ## [1.3.1] - 2017-01-12
 ### Fixed
 - Fixed an issue with objects containing prohibited keys nested inside other objects with prohibited keys. #2
@@ -23,6 +27,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Initial Release.
 
+[1.3.2]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.1.0...v1.2.0
