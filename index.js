@@ -3,12 +3,20 @@
 var TEST_REGEX = /^\$|\./,
     REPLACE_REGEX = /^\$|\./g;
 
-var withEach = function(target, cb) {
+function isPlainObject(obj) {
+  if(obj === null || typeof obj !== 'object') {
+    return false;
+  }
+  var proto = Object.getPrototypeOf(obj);
+  return proto === Object.prototype || proto === null;
+}
+
+function withEach(target, cb) {
   var act = function(obj) {
     if(Array.isArray(obj)) {
       obj.forEach(act);
 
-    } else if(obj instanceof Object) {
+    } else if(isPlainObject(obj)) {
       Object.keys(obj).forEach(function(key) {
         var val = obj[key];
         var resp = cb(obj, val, key);
@@ -20,9 +28,9 @@ var withEach = function(target, cb) {
   };
 
   act(target);
-};
+}
 
-var has = function(target) {
+function has(target) {
   var hasProhibited = false;
   withEach(target, function(obj, val, key) {
     if(TEST_REGEX.test(key)) {
@@ -34,9 +42,9 @@ var has = function(target) {
   });
 
   return hasProhibited;
-};
+}
 
-var sanitize = function(target, options) {
+function sanitize(target, options) {
   options = options || {};
 
   var replaceWith = null;
@@ -64,9 +72,9 @@ var sanitize = function(target, options) {
   });
 
   return target;
-};
+}
 
-var middleware = function(options) {
+function middleware(options) {
   return function(req, res, next) {
     ['body', 'params', 'query'].forEach(function(k) {
       if(req[k]) {
@@ -75,7 +83,7 @@ var middleware = function(options) {
     });
     next();
   };
-};
+}
 
 module.exports = middleware;
 module.exports.sanitize = sanitize;
