@@ -4,11 +4,7 @@ var TEST_REGEX = /^\$|\./,
     REPLACE_REGEX = /^\$|\./g;
 
 function isPlainObject(obj) {
-  if(obj === null || typeof obj !== 'object') {
-    return false;
-  }
-  var proto = Object.getPrototypeOf(obj);
-  return proto === Object.prototype || proto === null;
+  return typeof obj === 'object' && obj !== null;
 }
 
 function withEach(target, cb) {
