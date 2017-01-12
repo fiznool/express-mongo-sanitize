@@ -345,6 +345,33 @@ describe('Express Mongo Sanitize', function() {
           }, done);
       });
     });
+
+    describe('Nested Object inside one with prohibited chars', function() {
+      it('should sanitize a nested object inside one with prohibited chars in a JSON body', function(done) {
+        request(app)
+          .post('/body')
+          .send({
+            username: {
+              $gt: 'foo',
+              'dotted.data': {
+                'more.dotted.data': 'some_data'
+              }
+            }
+          })
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200, {
+            body: {
+              username: {
+                _gt: 'foo',
+                dotted_data: {
+                  'more_dotted_data': 'some_data'
+                }
+              }
+            }
+          }, done);
+      });
+    });
   });
 
   describe('Preserve Data: prohibited characters', function() {

@@ -11,9 +11,9 @@ var withEach = function(target, cb) {
     } else if(obj instanceof Object) {
       Object.keys(obj).forEach(function(key) {
         var val = obj[key];
-        var shouldRecurse = cb(obj, val, key);
-        if(shouldRecurse) {
-          act(obj[key]);
+        var resp = cb(obj, val, key);
+        if(resp.shouldRecurse) {
+          act(obj[resp.key || key]);
         }
       });
     }
@@ -27,9 +27,9 @@ var has = function(target) {
   withEach(target, function(obj, val, key) {
     if(TEST_REGEX.test(key)) {
       hasProhibited = true;
-      return false;
+      return { shouldRecurse: false };
     } else {
-      return true;
+      return { shouldRecurse: true };
     }
   });
 
@@ -50,13 +50,17 @@ var sanitize = function(target, options) {
     if(TEST_REGEX.test(key)) {
       delete obj[key];
       if(replaceWith) {
-        obj[key.replace(REPLACE_REGEX, replaceWith)] = val;
+        key = key.replace(REPLACE_REGEX, replaceWith);
+        obj[key] = val;
       } else {
         shouldRecurse = false;
       }
     }
 
-    return shouldRecurse;
+    return {
+      shouldRecurse: shouldRecurse,
+      key: key
+    };
   });
 
   return target;
