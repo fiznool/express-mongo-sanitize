@@ -19,11 +19,11 @@ npm install express-mongo-sanitize
 Add as a piece of express middleware, before defining your routes.
 
 ``` js
-var express = require('express'),
-    bodyParser = require('body-parser'),
-    mongoSanitize = require('express-mongo-sanitize');
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoSanitize = require('express-mongo-sanitize');
 
-var app = express();
+const app = express();
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -41,9 +41,9 @@ app.use(mongoSanitize({
 You can also bypass the middleware and use the module directly:
 
 ``` js
-var mongoSanitize = require('express-mongo-sanitize');
+const mongoSanitize = require('express-mongo-sanitize');
 
-var payload = {...};
+const payload = {...};
 
 // Remove any keys containing prohibited characters
 mongoSanitize.sanitize(payload);
@@ -54,7 +54,7 @@ mongoSanitize.sanitize(payload, {
 });
 
 // Check if the payload has keys with prohibited characters
-var hasProhibited = mongoSanitize.has(payload);
+const hasProhibited = mongoSanitize.has(payload);
 ```
 
 ## What?
