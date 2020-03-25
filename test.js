@@ -1,21 +1,27 @@
 'use strict';
 
-var request = require('supertest'),
-    express = require('express'),
-    bodyParser = require('body-parser'),
-    expect = require('chai').expect,
-    sanitize = require('./index.js');
+const request = require('supertest');
+const express = require('express');
+const bodyParser = require('body-parser');
+const expect = require('chai').expect;
+const sanitize = require('./index.js');
 
 describe('Express Mongo Sanitize', function() {
   describe('Remove Data', function() {
-    var app = express();
+    const app = express();
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(bodyParser.json());
     app.use(sanitize());
 
     app.post('/body', function(req, res){
       res.status(200).json({
-        body: req.body
+        body: req.body,
+      });
+    });
+
+    app.post('/headers', function (req, res){
+      res.status(200).json({
+        headers: req.headers
       });
     });
 
@@ -59,6 +65,29 @@ describe('Express Mongo Sanitize', function() {
               even: null
             }
           }, done);
+      });
+
+      it('should sanitize HTTP headers', function(done) {
+        request(app)
+          .post('/headers')
+          .set({
+            q: 'search',
+            is: true,
+            and: 1,
+            even: null,
+            $where: 'malicious',
+            'dotted.data': 'some_data'
+          })
+          .expect(200)
+          .expect(function(res) {
+            expect(res.body.headers).to.include({
+              q: 'search',
+              is: 'true',
+              and: '1',
+              even: 'null'
+            })
+          })
+          .end(done);
       });
 
       it('should sanitize a form url-encoded body', function(done) {
@@ -165,7 +194,7 @@ describe('Express Mongo Sanitize', function() {
   });
 
   describe('Preserve Data', function() {
-    var app = express();
+    const app = express();
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(bodyParser.json());
     app.use(sanitize({
@@ -175,6 +204,12 @@ describe('Express Mongo Sanitize', function() {
     app.post('/body', function(req, res){
       res.status(200).json({
         body: req.body
+      });
+    });
+
+    app.post('/headers', function (req, res){
+      res.status(200).json({
+        headers: req.headers
       });
     });
 
@@ -222,6 +257,30 @@ describe('Express Mongo Sanitize', function() {
               dotted_data: 'some_data'
             }
           }, done);
+      });
+
+      it('should sanitize HTTP headers', function(done) {
+        request(app)
+          .post('/headers')
+          .set({
+            q: 'search',
+            is: true,
+            and: 1,
+            even: null,
+            $where: 'malicious',
+            'dotted.data': 'some_data'
+          })
+          .expect(function(res) {
+            expect(res.body.headers).to.include({
+              q: 'search',
+              is: 'true',
+              and: '1',
+              even: 'null',
+              _where: 'malicious',
+              dotted_data: 'some_data'
+            })
+          })
+          .end(done);
       });
 
       it('should sanitize a form url-encoded body', function(done) {
@@ -376,7 +435,7 @@ describe('Express Mongo Sanitize', function() {
 
   describe('Preserve Data: prohibited characters', function() {
     it('should not allow data to be replaced with a `$`', function(done) {
-      var app = express();
+      const app = express();
       app.use(bodyParser.urlencoded({extended: true}));
       app.use(sanitize({
         replaceWith: '$'
@@ -398,7 +457,7 @@ describe('Express Mongo Sanitize', function() {
     });
 
     it('should not allow data to be replaced with a `.`', function(done) {
-      var app = express();
+      const app = express();
       app.use(bodyParser.urlencoded({extended: true}));
       app.use(sanitize({
         replaceWith: '.'
@@ -422,21 +481,21 @@ describe('Express Mongo Sanitize', function() {
 
   describe('Has Prohibited Keys', function() {
     it('should return true if the object has a key beginning with a `$`', function() {
-      var input = {
+      const input = {
         $prohibited: 'key'
       };
       expect(sanitize.has(input)).to.be.true;
     });
 
     it('should return true if the object has a key containing a `.`', function() {
-      var input = {
+      const input = {
         'prohibited.key': 'value'
       };
       expect(sanitize.has(input)).to.be.true;
     });
 
     it('should return true if the object has a nested key beginning with a `$`', function() {
-      var input = {
+      const input = {
         nested: {
           $prohibited: 'key'
         }
@@ -445,7 +504,7 @@ describe('Express Mongo Sanitize', function() {
     });
 
     it('should return true if the object has a nested key containing a `.`', function() {
-      var input = {
+      const input = {
         nested: {
           'prohibited.key': 'value'
         }
@@ -454,21 +513,21 @@ describe('Express Mongo Sanitize', function() {
     });
 
     it('should return true if the array contains an object with a key beginning with a `$`', function() {
-      var input = [{
+      const input = [{
         $prohibited: 'key'
       }];
       expect(sanitize.has(input)).to.be.true;
     });
 
     it('should return true if the array contains an object with a key containing a `.`', function() {
-      var input = [{
+      const input = [{
         'prohibited.key': 'value'
       }];
       expect(sanitize.has(input)).to.be.true;
     });
 
     it('should return true if the payload contains a deeply nested object with a key beginning with a `$`', function() {
-      var input = [{
+      const input = [{
         some: {
           deeply: [{
             nested: {
@@ -481,7 +540,7 @@ describe('Express Mongo Sanitize', function() {
     });
 
     it('should return true if the payload contains a deeply nested object with a key containing a `.`', function() {
-      var input = [{
+      const input = [{
         some: {
           deeply: [{
             nested: {
@@ -494,7 +553,7 @@ describe('Express Mongo Sanitize', function() {
     });
 
     it('should return false if the payload doesn\'t contain any prohibited characters', function() {
-      var input = {
+      const input = {
         some: {
           nested: [{
             data: 'panda'

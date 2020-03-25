@@ -1,33 +1,32 @@
 'use strict';
 
-var TEST_REGEX = /^\$|\./,
-    REPLACE_REGEX = /^\$|\./g;
+const TEST_REGEX = /^\$|\./;
+const REPLACE_REGEX = /^\$|\./g;
 
 function isPlainObject(obj) {
   return typeof obj === 'object' && obj !== null;
 }
 
 function withEach(target, cb) {
-  var act = function(obj) {
+  (function act(obj) {
     if(Array.isArray(obj)) {
       obj.forEach(act);
 
     } else if(isPlainObject(obj)) {
       Object.keys(obj).forEach(function(key) {
-        var val = obj[key];
-        var resp = cb(obj, val, key);
+        const val = obj[key];
+        const resp = cb(obj, val, key);
         if(resp.shouldRecurse) {
           act(obj[resp.key || key]);
         }
       });
     }
-  };
+  })(target);
 
-  act(target);
 }
 
 function has(target) {
-  var hasProhibited = false;
+  let hasProhibited = false;
   withEach(target, function(obj, val, key) {
     if(TEST_REGEX.test(key)) {
       hasProhibited = true;
@@ -43,13 +42,13 @@ function has(target) {
 function sanitize(target, options) {
   options = options || {};
 
-  var replaceWith = null;
+  let replaceWith = null;
   if(!(TEST_REGEX.test(options.replaceWith))) {
     replaceWith = options.replaceWith;
   }
 
   withEach(target, function(obj, val, key) {
-    var shouldRecurse = true;
+    let shouldRecurse = true;
 
     if(TEST_REGEX.test(key)) {
       delete obj[key];
@@ -72,7 +71,7 @@ function sanitize(target, options) {
 
 function middleware(options) {
   return function(req, res, next) {
-    ['body', 'params', 'query'].forEach(function(k) {
+    ['body', 'params', 'headers', 'query'].forEach(function(k) {
       if(req[k]) {
         req[k] = sanitize(req[k], options);
       }

@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0] - 2020-03-25
+### Added / Breaking
+- Support sanitization of headers. #5
+
+Note that if you weren't previously expecting headers to be sanitized, this is considered a breaking change.
+
+### Breaking
+- Drop support for node versions < 10.
+
 ## [1.3.2] - 2017-01-12
 ### Fixed
 - Fixed an issue when using the sanitizer in the node REPL. #3
@@ -27,6 +36,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 Initial Release.
 
+[2.0.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.2...v2.0.0
 [1.3.2]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.2.0...v1.3.0
