@@ -1,5 +1,19 @@
 'use strict';
 
+const whitelist = [
+  "settings.profileSetupRequired",
+  "physicalAddress.street",
+  "physicalAddress.city",
+  "physicalAddress.state",
+  "physicalAddress.zipCode",
+  "socialMediaLink.facebook",
+  "socialMediaLink.instagram",
+  "socialMediaLink.snapchat",
+  "socialMediaLink.twitter",
+  "socialMediaLink.linkedin",
+  "socialMediaLink.youtube",
+]
+
 const TEST_REGEX = /^\$|\./;
 const REPLACE_REGEX = /^\$|\./g;
 
@@ -40,6 +54,7 @@ function has(target) {
 }
 
 function sanitize(target, options) {
+
   options = options || {};
 
   let replaceWith = null;
@@ -50,7 +65,7 @@ function sanitize(target, options) {
   withEach(target, function(obj, val, key) {
     let shouldRecurse = true;
 
-    if(TEST_REGEX.test(key)) {
+    if(!inWhitelist(key) && TEST_REGEX.test(key)) {
       delete obj[key];
       if(replaceWith) {
         key = key.replace(REPLACE_REGEX, replaceWith);
@@ -78,6 +93,14 @@ function middleware(options) {
     });
     next();
   };
+}
+
+
+function inWhitelist(key) {
+  // DEBUG
+  // console.log(`[${typeof key}] key=${key}`);
+  // console.log(`inWhitelist = ${whitelist.includes(key)}`);
+  return whitelist.includes(key);
 }
 
 module.exports = middleware;
