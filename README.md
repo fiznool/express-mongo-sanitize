@@ -2,8 +2,9 @@
 
 Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Operator Injection.
 
-[![Build Status](https://travis-ci.org/fiznool/express-mongo-sanitize.svg?branch=master)](https://travis-ci.org/fiznool/express-mongo-sanitize)
-[![npm version](https://badge.fury.io/js/express-mongo-sanitize.svg)](http://badge.fury.io/js/express-mongo-sanitize)
+[![Build Status](https://github.com/fiznool/express-mongo-sanitize/workflows/Node.js%20CI/badge.svg)](https://github.com/fiznool/express-mongo-sanitize/workflows/Node.js%20CI/badge.svg)
+[![npm version](https://img.shields.io/npm/v/express-mongo-sanitize)](https://img.shields.io/npm/v/express-mongo-sanitize)
+[![npm downloads per week](https://img.shields.io/npm/dw/express-mongo-sanitize?color=blue)](https://img.shields.io/npm/dw/express-mongo-sanitize?color=blue)
 [![Dependency Status](https://david-dm.org/fiznool/express-mongo-sanitize.svg)](https://david-dm.org/fiznool/express-mongo-sanitize)
 [![devDependency Status](https://david-dm.org/fiznool/express-mongo-sanitize/dev-status.svg)](https://david-dm.org/fiznool/express-mongo-sanitize#info=devDependencies)
 
