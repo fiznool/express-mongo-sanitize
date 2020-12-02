@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.1] - 2020-12-02
+### Updated
+- Update dependencies and test against node 14.
+
+### Changed
+- Use ESLint instead of JSHint for code linting.
+- Use GitHub Actions for CI instead of Travis.
+
 ## [2.0.0] - 2020-03-25
 ### Added / Breaking
 - Support sanitization of headers. #5
@@ -36,6 +44,7 @@ Note that if you weren't previously expecting headers to be sanitized, this is c
 
 Initial Release.
 
+[2.0.1]: https://github.com/fiznool/express-mongo-sanitize/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.2...v2.0.0
 [1.3.2]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/fiznool/express-mongo-sanitize/compare/v1.3.0...v1.3.1
