@@ -431,6 +431,45 @@ describe('Express Mongo Sanitize', function() {
           }, done);
       });
     });
+
+    describe('__proto__ key', function() {
+      it('should not set __proto__ property', function (done) {
+        const app = express();
+        app.use(bodyParser.urlencoded({extended: true}));
+        app.use(bodyParser.json());
+        app.use(sanitize({
+          replaceWith: '_'
+        }));
+
+        app.post('/body', function (req, res) {
+          // should not inject valued
+          expect(req.body.injected).to.be.undefined;
+          res.status(200).json({
+            body: req.body
+          });
+        });
+        request(app)
+            .post('/body')
+            .send({
+              // replace $ with _
+              $_proto__: {
+                injected: "injected value"
+              },
+              query: {
+                q: 'search'
+              }
+            })
+            .set('Content-Type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200, {
+              body: {
+                query: {
+                  q: 'search'
+                }
+              }
+            }, done);
+      });
+    });
   });
 
   describe('Preserve Data: prohibited characters', function() {

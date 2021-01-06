@@ -54,7 +54,12 @@ function sanitize(target, options) {
       delete obj[key];
       if(replaceWith) {
         key = key.replace(REPLACE_REGEX, replaceWith);
-        obj[key] = val;
+        // Avoid to set __proto__ and constructor.prototype
+        // https://portswigger.net/daily-swig/prototype-pollution-the-dangerous-and-underrated-vulnerability-impacting-javascript-applications
+        // https://snyk.io/vuln/SNYK-JS-LODASH-73638
+        if (key !== "__proto__" && key !== "constructor" && key !== "prototype") {
+          obj[key] = val;
+        }
       } else {
         shouldRecurse = false;
       }
