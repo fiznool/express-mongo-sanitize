@@ -432,14 +432,12 @@ describe('Express Mongo Sanitize', function() {
       });
     });
 
-    describe('__proto__ key', function() {
-      it('should not set __proto__ property', function (done) {
+    describe('prototype pollution', function() {
+      const createApp = (options) => {
         const app = express();
         app.use(bodyParser.urlencoded({extended: true}));
         app.use(bodyParser.json());
-        app.use(sanitize({
-          replaceWith: '_'
-        }));
+        app.use(sanitize(options));
 
         app.post('/body', function (req, res) {
           // should not inject valued
@@ -447,6 +445,12 @@ describe('Express Mongo Sanitize', function() {
           res.status(200).json({
             body: req.body
           });
+        });
+        return app;
+      }
+      it('should not set __proto__ property', function (done) {
+        const app = createApp({
+          replaceWith: "_"
         });
         request(app)
             .post('/body')
@@ -468,6 +472,56 @@ describe('Express Mongo Sanitize', function() {
                 }
               }
             }, done);
+      });
+      it('should not set constructor property', function (done) {
+        const app = createApp({
+          replaceWith: ""
+        });
+        request(app)
+          .post('/body')
+          .send({
+            // replace $ with empty string
+            $constructor: {
+              injected: "injected value"
+            },
+            query: {
+              q: 'search'
+            }
+          })
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200, {
+            body: {
+              query: {
+                q: 'search'
+              }
+            }
+          }, done);
+      });
+      it('should not set prototype property', function (done) {
+        const app = createApp({
+          replaceWith: ""
+        });
+        request(app)
+          .post('/body')
+          .send({
+            // replace $ with empty string
+            $prototype: {
+              injected: "injected value"
+            },
+            query: {
+              q: 'search'
+            }
+          })
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200, {
+            body: {
+              query: {
+                q: 'search'
+              }
+            }
+          }, done);
       });
     });
   });
