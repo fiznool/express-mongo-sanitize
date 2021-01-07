@@ -431,6 +431,99 @@ describe('Express Mongo Sanitize', function() {
           }, done);
       });
     });
+
+    describe('prototype pollution', function() {
+      const createApp = (options) => {
+        const app = express();
+        app.use(bodyParser.urlencoded({extended: true}));
+        app.use(bodyParser.json());
+        app.use(sanitize(options));
+
+        app.post('/body', function (req, res) {
+          // should not inject valued
+          expect(req.body.injected).to.be.undefined;
+          res.status(200).json({
+            body: req.body
+          });
+        });
+        return app;
+      }
+      it('should not set __proto__ property', function (done) {
+        const app = createApp({
+          replaceWith: "_"
+        });
+        request(app)
+            .post('/body')
+            .send({
+              // replace $ with _
+              $_proto__: {
+                injected: "injected value"
+              },
+              query: {
+                q: 'search'
+              }
+            })
+            .set('Content-Type', 'application/json')
+            .set('Accept', 'application/json')
+            .expect(200, {
+              body: {
+                query: {
+                  q: 'search'
+                }
+              }
+            }, done);
+      });
+      it('should not set constructor property', function (done) {
+        const app = createApp({
+          replaceWith: "c"
+        });
+        request(app)
+          .post('/body')
+          .send({
+            // replace $ with c
+            $onstructor: {
+              injected: "injected value"
+            },
+            query: {
+              q: 'search'
+            }
+          })
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200, {
+            body: {
+              query: {
+                q: 'search'
+              }
+            }
+          }, done);
+      });
+      it('should not set prototype property', function (done) {
+        const app = createApp({
+          replaceWith: "p"
+        });
+        request(app)
+          .post('/body')
+          .send({
+            // replace $ with empty p
+            $rototype: {
+              injected: "injected value"
+            },
+            query: {
+              q: 'search'
+            }
+          })
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200, {
+            body: {
+              query: {
+                q: 'search'
+              }
+            }
+          }, done);
+      });
+    });
   });
 
   describe('Preserve Data: prohibited characters', function() {
