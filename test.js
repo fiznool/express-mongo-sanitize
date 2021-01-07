@@ -475,13 +475,13 @@ describe('Express Mongo Sanitize', function() {
       });
       it('should not set constructor property', function (done) {
         const app = createApp({
-          replaceWith: ""
+          replaceWith: "c"
         });
         request(app)
           .post('/body')
           .send({
-            // replace $ with empty string
-            $constructor: {
+            // replace $ with c
+            $onstructor: {
               injected: "injected value"
             },
             query: {
@@ -500,13 +500,13 @@ describe('Express Mongo Sanitize', function() {
       });
       it('should not set prototype property', function (done) {
         const app = createApp({
-          replaceWith: ""
+          replaceWith: "p"
         });
         request(app)
           .post('/body')
           .send({
-            // replace $ with empty string
-            $prototype: {
+            // replace $ with empty p
+            $rototype: {
               injected: "injected value"
             },
             query: {
