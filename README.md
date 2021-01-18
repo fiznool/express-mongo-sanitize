@@ -35,9 +35,36 @@ app.use(mongoSanitize());
 // Or, to replace prohibited characters with _, use:
 app.use(mongoSanitize({
   replaceWith: '_'
-}))
+}));
 
 ```
+
+### `onSanitize`
+
+`onSanitize` callback is called after the request's value was sanitized.
+
+```js
+app.use(mongoSanitize({
+  onSanitize: ({ req, key }) => {
+    console.warn(`This request[${key}] is sanitized`, req);
+  }
+}));
+```
+
+### `dryRun`
+
+You can run this middleware as dry run mode.
+
+```js
+app.use(mongoSanitize({
+  dryRun: true,
+  onSanitize: ({ req, key }) => {
+    console.warn(`[DryRun] This request[${key}] will be sanitized`, req);
+  }
+}));
+```
+
+### Node Modules API
 
 You can also bypass the middleware and use the module directly:
 

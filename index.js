@@ -39,10 +39,10 @@ function has(target) {
   return hasProhibited;
 }
 
-function sanitize(target, options) {
-  options = options || {};
-
+function _sanitize(target, options){
+  let isSanitized = false;
   let replaceWith = null;
+  let dryRun = Boolean(options.dryRun);
   if(!(TEST_REGEX.test(options.replaceWith))) {
     replaceWith = options.replaceWith;
   }
@@ -51,6 +51,14 @@ function sanitize(target, options) {
     let shouldRecurse = true;
 
     if(TEST_REGEX.test(key)) {
+      isSanitized = true;
+      // if dryRun is enabled, do not modify the target
+      if (dryRun) {
+        return {
+          shouldRecurse: shouldRecurse,
+          key: key
+        };
+      }
       delete obj[key];
       if(replaceWith) {
         key = key.replace(REPLACE_REGEX, replaceWith);
@@ -71,14 +79,34 @@ function sanitize(target, options) {
     };
   });
 
-  return target;
+  return {
+    isSanitized,
+    target
+  }
 }
 
+function sanitize(target, options) {
+  return _sanitize(target, options).target;
+}
+
+/**
+ * @param {{replaceWith?: string, onSanitize?: function, dryRun?: boolean}} options
+ * @returns {function}
+ */
 function middleware(options) {
+  options = options || {};
+  const hasOnSanitize = typeof options.onSanitize === "function";
   return function(req, res, next) {
-    ['body', 'params', 'headers', 'query'].forEach(function(k) {
-      if(req[k]) {
-        req[k] = sanitize(req[k], options);
+    ['body', 'params', 'headers', 'query'].forEach(function(key) {
+      if(req[key]) {
+        const { target, isSanitized } = _sanitize(req[key], options);
+        req[key] = target;
+        if (isSanitized && hasOnSanitize) {
+          options.onSanitize({
+            req,
+            key
+          })
+        }
       }
     });
     next();

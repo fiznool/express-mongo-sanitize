@@ -5,6 +5,17 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const expect = require('chai').expect;
 const sanitize = require('./index.js');
+const callTracker = () => {
+  const callStack = [];
+  return {
+    report() {
+      return callStack;
+    },
+    call(...args) {
+      callStack.push(args);
+    }
+  }
+}
 
 describe('Express Mongo Sanitize', function() {
   describe('Remove Data', function() {
@@ -453,25 +464,25 @@ describe('Express Mongo Sanitize', function() {
           replaceWith: "_"
         });
         request(app)
-            .post('/body')
-            .send({
-              // replace $ with _
-              $_proto__: {
-                injected: "injected value"
-              },
+          .post('/body')
+          .send({
+            // replace $ with _
+            $_proto__: {
+              injected: "injected value"
+            },
+            query: {
+              q: 'search'
+            }
+          })
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json')
+          .expect(200, {
+            body: {
               query: {
                 q: 'search'
               }
-            })
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json')
-            .expect(200, {
-              body: {
-                query: {
-                  q: 'search'
-                }
-              }
-            }, done);
+            }
+          }, done);
       });
       it('should not set constructor property', function (done) {
         const app = createApp({
@@ -539,7 +550,7 @@ describe('Express Mongo Sanitize', function() {
           query: req.query
         });
       });
-       request(app)
+      request(app)
         .get('/query?q=search&$where=malicious&dotted.data=some_data')
         .set('Accept', 'application/json')
         .expect(200, {
@@ -561,7 +572,7 @@ describe('Express Mongo Sanitize', function() {
           query: req.query
         });
       });
-       request(app)
+      request(app)
         .get('/query?q=search&$where=malicious&dotted.data=some_data')
         .set('Accept', 'application/json')
         .expect(200, {
@@ -654,6 +665,168 @@ describe('Express Mongo Sanitize', function() {
         }
       };
       expect(sanitize.has(input)).to.be.false;
+    });
+  });
+
+  describe('onSanitize', function () {
+    it('should not call onSanitize if the object is valid', function (done) {
+      const tracker = callTracker();
+      const app = express();
+      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.json());
+      app.use(sanitize({
+        dryRun: true,
+        onSanitize(arg) {
+          tracker.call(arg);
+        }
+      }));
+      app.post('/body', function (req, res) {
+        res.status(200).json({
+          body: req.body
+        });
+      });
+      request(app)
+        .post('/body')
+        .send({
+          q: 'search'
+        })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200, {
+          body: {
+            q: 'search',
+          }
+        }, (error) => {
+          expect(tracker.report()).to.have.lengthOf(0);
+          done(error);
+        });
+    });
+    it('should call onSanitize if the object has a malicious key', function (done) {
+      const tracker = callTracker();
+      const app = express();
+      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.json());
+      app.use(sanitize({
+        onSanitize(arg) {
+          tracker.call(arg);
+        }
+      }));
+      app.post('/body', function (req, res) {
+        res.status(200).json({
+          body: req.body
+        });
+      });
+      request(app)
+        .post('/body')
+        .send({
+          q: 'search',
+          is: true,
+          and: 1,
+          even: null,
+          stop: undefined,
+          $where: 'malicious',
+          'dotted.data': 'some_data'
+        })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200, {
+          body: {
+            q: 'search',
+            is: true,
+            and: 1,
+            even: null
+          }
+        }, (error) => {
+          const callStack = tracker.report();
+          expect(callStack).to.have.lengthOf(1);
+          const calledFirstArgument = callStack[0][0];
+          expect(calledFirstArgument).to.have.property("req");
+          expect(calledFirstArgument).to.have.property("key", "body");
+          done(error);
+        });
+    })
+  });
+  describe('dryRun', function () {
+    it('should not sanitized if the object has a malicious key', function (done) {
+      const tracker = callTracker();
+      const app = express();
+      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.json());
+      app.use(sanitize({
+        dryRun: true
+      }));
+      app.post('/body', function (req, res) {
+        res.status(200).json({
+          body: req.body
+        });
+      });
+      request(app)
+        .post('/body')
+        .send({
+          q: 'search',
+          is: true,
+          and: 1,
+          even: null,
+          $where: 'malicious',
+          'dotted.data': 'some_data'
+        })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200, {
+          body: {
+            q: 'search',
+            is: true,
+            and: 1,
+            even: null,
+            $where: 'malicious',
+            'dotted.data': 'some_data'
+          }
+        }, done);
+    })
+    it('should not sanitized, but call onSanitize if the object has a malicious key', function (done) {
+      const tracker = callTracker();
+      const app = express();
+      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.json());
+      app.use(sanitize({
+        dryRun: true,
+        onSanitize(arg) {
+          tracker.call(arg);
+        }
+      }));
+      app.post('/body', function (req, res) {
+        res.status(200).json({
+          body: req.body
+        });
+      });
+      request(app)
+        .post('/body')
+        .send({
+          q: 'search',
+          is: true,
+          and: 1,
+          even: null,
+          $where: 'malicious',
+          'dotted.data': 'some_data'
+        })
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json')
+        .expect(200, {
+          body: {
+            q: 'search',
+            is: true,
+            and: 1,
+            even: null,
+            $where: 'malicious',
+            'dotted.data': 'some_data'
+          }
+        }, (error) => {
+          const callStack = tracker.report();
+          expect(callStack).to.have.lengthOf(1);
+          const calledFirstArgument = callStack[0][0];
+          expect(calledFirstArgument).to.have.property("key", "body");
+          done(error);
+        });
     });
   });
 });
