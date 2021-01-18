@@ -93,8 +93,7 @@ function sanitize(target, options) {
  * @param {{replaceWith?: string, onSanitize?: function, dryRun?: boolean}} options
  * @returns {function}
  */
-function middleware(options) {
-  options = options || {};
+function middleware(options = {}) {
   const hasOnSanitize = typeof options.onSanitize === "function";
   return function(req, res, next) {
     ['body', 'params', 'headers', 'query'].forEach(function(key) {
