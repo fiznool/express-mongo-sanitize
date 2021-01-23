@@ -101,7 +101,11 @@ function middleware(options) {
         req[k] = sanitize(
           req[k],
           options,
-          options?.allowDots ? TEST_REGEX_WITHOUT_DOT : TEST_REGEX
+          options
+            ? options.allowDots
+              ? TEST_REGEX_WITHOUT_DOT
+              : TEST_REGEX
+            : null
         );
       }
     });
