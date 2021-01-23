@@ -51,8 +51,10 @@ function sanitize(target, options, regex) {
   if (!regex) {
     regex = TEST_REGEX;
 
-    if (options?.allowDots) {
-      TEST_REGEX = TEST_REGEX_WITHOUT_DOT;
+    if (options) {
+      if (options.allowDots) {
+        TEST_REGEX = TEST_REGEX_WITHOUT_DOT;
+      }
     }
   }
 
