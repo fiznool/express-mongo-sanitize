@@ -8,10 +8,9 @@ Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Ope
 [![Dependency Status](https://david-dm.org/fiznool/express-mongo-sanitize.svg)](https://david-dm.org/fiznool/express-mongo-sanitize)
 [![devDependency Status](https://david-dm.org/fiznool/express-mongo-sanitize/dev-status.svg)](https://david-dm.org/fiznool/express-mongo-sanitize#info=devDependencies)
 
-
 ## Installation
 
-``` bash
+```bash
 npm install express-mongo-sanitize
 ```
 
@@ -19,29 +18,39 @@ npm install express-mongo-sanitize
 
 Add as a piece of express middleware, before defining your routes.
 
-``` js
+```js
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoSanitize = require('express-mongo-sanitize');
 
 const app = express();
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // To remove data, use:
 app.use(mongoSanitize());
 
 // Or, to replace prohibited characters with _, use:
-app.use(mongoSanitize({
-  replaceWith: '_'
-}))
+app.use(
+  mongoSanitize({
+    replaceWith: '_',
+  })
+);
 
+// Or, to sanitize data that only contains $, without .(dot)
+// Can be useful for letting data pass that is meant for querying nested documents. NOTE: This may cause some problems on older versions of MongoDb
+// READ MORE: https://github.com/fiznool/express-mongo-sanitize/issues/36
+app.use(
+  mongoSanitize({
+    allowDots: true,
+  })
+);
 ```
 
 You can also bypass the middleware and use the module directly:
 
-``` js
+```js
 const mongoSanitize = require('express-mongo-sanitize');
 
 const payload = {...};
@@ -54,8 +63,41 @@ mongoSanitize.sanitize(payload, {
   replaceWith: '_'
 });
 
+// Exclude sanitization of . (dot), only sanitize data that contains $. This may cause some problems on older versions of mongoDb
+mongoSanitize.sanitize(payload, {
+  allowDots: true
+});
+
 // Check if the payload has keys with prohibited characters
 const hasProhibited = mongoSanitize.has(payload);
+```
+
+You can also combine allowDots with replaceWith options:
+
+```js
+const mongoSanitize = require('express-mongo-sanitize');
+
+const payload = {...};
+
+// This will only replace the $ with _(symbol) and allow dots
+// Example. {'some.data': 'da', $where: 'bad'} -> {'some.data': 'da', _where: 'bad'}
+
+// middleware
+app.use(
+  mongoSanitize({
+    allowDots: true,
+    replaceWith: '_'
+  })
+);
+
+// module
+mongoSanitize.sanitize(payload, {
+  allowDots: true,
+  replaceWith: '_'
+});
+
+// Check if the payload has keys with prohibited characters. Pass true as the second argument so it allows dots.
+const hasProhibited = mongoSanitize.has(payload, true);
 ```
 
 ## What?
@@ -71,7 +113,7 @@ See the spec file for more examples.
 
 ## Why?
 
-Object keys starting with a `$` or containing a `.` are _reserved_ for use by MongoDB as operators. Without this sanitization,  malicious users could send an object containing a `$` operator, or including a `.`, which could change the context of a database operation. Most notorious is the `$where` operator, which can execute arbitrary JavaScript on the database.
+Object keys starting with a `$` or containing a `.` are _reserved_ for use by MongoDB as operators. Without this sanitization, malicious users could send an object containing a `$` operator, or including a `.`, which could change the context of a database operation. Most notorious is the `$where` operator, which can execute arbitrary JavaScript on the database.
 
 The best way to prevent this is to sanitize the received data, and remove any offending keys, or replace the characters with a 'safe' one.
 

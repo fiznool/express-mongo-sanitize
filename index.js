@@ -1,7 +1,8 @@
 'use strict';
 
-const TEST_REGEX = /^\$|\./;
-const REPLACE_REGEX = /^\$|\./g;
+let TEST_REGEX = /^\$|\./;
+const TEST_REGEX_WITHOUT_DOT = /^\$/;
+let REPLACE_REGEX = /^\$|\./g;
 
 function isPlainObject(obj) {
   return typeof obj === 'object' && obj !== null;
@@ -9,26 +10,30 @@ function isPlainObject(obj) {
 
 function withEach(target, cb) {
   (function act(obj) {
-    if(Array.isArray(obj)) {
+    if (Array.isArray(obj)) {
       obj.forEach(act);
-
-    } else if(isPlainObject(obj)) {
-      Object.keys(obj).forEach(function(key) {
+    } else if (isPlainObject(obj)) {
+      Object.keys(obj).forEach(function (key) {
         const val = obj[key];
         const resp = cb(obj, val, key);
-        if(resp.shouldRecurse) {
+        if (resp.shouldRecurse) {
           act(obj[resp.key || key]);
         }
       });
     }
   })(target);
-
 }
 
-function has(target) {
+function has(target, allowDots) {
+  let regex = TEST_REGEX;
+
+  if (allowDots) {
+    regex = TEST_REGEX_WITHOUT_DOT;
+  }
+
   let hasProhibited = false;
-  withEach(target, function(obj, val, key) {
-    if(TEST_REGEX.test(key)) {
+  withEach(target, function (obj, val, key) {
+    if (TEST_REGEX.test(key)) {
       hasProhibited = true;
       return { shouldRecurse: false };
     } else {
@@ -39,25 +44,38 @@ function has(target) {
   return hasProhibited;
 }
 
-function sanitize(target, options) {
+function sanitize(target, options, regex) {
   options = options || {};
 
+  // Regex is not passed from the middleware
+  if (!regex) {
+    regex = TEST_REGEX;
+
+    if (options?.allowDots) {
+      TEST_REGEX = TEST_REGEX_WITHOUT_DOT;
+    }
+  }
+
   let replaceWith = null;
-  if(!(TEST_REGEX.test(options.replaceWith))) {
+  if (!regex.test(options.replaceWith) && options.replaceWith !== '.') {
     replaceWith = options.replaceWith;
   }
 
-  withEach(target, function(obj, val, key) {
+  withEach(target, function (obj, val, key) {
     let shouldRecurse = true;
 
-    if(TEST_REGEX.test(key)) {
+    if (regex.test(key)) {
       delete obj[key];
-      if(replaceWith) {
+      if (replaceWith) {
         key = key.replace(REPLACE_REGEX, replaceWith);
         // Avoid to set __proto__ and constructor.prototype
         // https://portswigger.net/daily-swig/prototype-pollution-the-dangerous-and-underrated-vulnerability-impacting-javascript-applications
         // https://snyk.io/vuln/SNYK-JS-LODASH-73638
-        if (key !== "__proto__" && key !== "constructor" && key !== "prototype") {
+        if (
+          key !== '__proto__' &&
+          key !== 'constructor' &&
+          key !== 'prototype'
+        ) {
           obj[key] = val;
         }
       } else {
@@ -67,7 +85,7 @@ function sanitize(target, options) {
 
     return {
       shouldRecurse: shouldRecurse,
-      key: key
+      key: key,
     };
   });
 
@@ -75,10 +93,14 @@ function sanitize(target, options) {
 }
 
 function middleware(options) {
-  return function(req, res, next) {
-    ['body', 'params', 'headers', 'query'].forEach(function(k) {
-      if(req[k]) {
-        req[k] = sanitize(req[k], options);
+  return function (req, res, next) {
+    ['body', 'params', 'headers', 'query'].forEach(function (k) {
+      if (req[k]) {
+        req[k] = sanitize(
+          req[k],
+          options,
+          options?.allowDots ? TEST_REGEX_WITHOUT_DOT : TEST_REGEX
+        );
       }
     });
     next();
