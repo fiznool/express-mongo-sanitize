@@ -20,12 +20,12 @@ type Middleware = {
      * @param target
      * @param options
      */
-    sanitize<T extends Record<string, unknown>>(target: T, options?: ExpressMongoSanitize.Options): T;
+    sanitize<T extends Record<string, unknown> | unknown[]>(target: T, options?: ExpressMongoSanitize.Options): T;
     /**
      * Check if the payload has keys with prohibited characters‘
      * @param target
      */
-    has(target: Record<string, unknown>): boolean;
+    has(target: Record<string, unknown> | unknown[]): boolean;
 };
 
 declare const ExpressMongoSanitize: Middleware & {
