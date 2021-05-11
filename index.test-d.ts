@@ -10,7 +10,7 @@ expectType<Handler>(mongoSanitize());
 expectType<Handler>(
   mongoSanitize({
     dryRun: true,
-    onSanitize: (req, res) => {
+    onSanitize: ({ req, key }) => {
       // nope
     },
     replaceWith: '_',

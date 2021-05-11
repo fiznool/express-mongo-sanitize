@@ -3,7 +3,7 @@ import { Request, Response, Handler } from 'express';
 declare namespace ExpressMongoSanitize {
   interface Options {
     replaceWith?: string;
-    onSanitize?: (req: Request, res: Response) => unknown;
+    onSanitize?: (params: { key: string; req: Request }) => void;
     dryRun?: boolean;
   }
 }
