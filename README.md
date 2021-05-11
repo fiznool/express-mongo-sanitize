@@ -106,6 +106,10 @@ Object keys starting with a `$` or containing a `.` are _reserved_ for use by Mo
 
 The best way to prevent this is to sanitize the received data, and remove any offending keys, or replace the characters with a 'safe' one.
 
+## Contributing
+
+PRs are welcome! Please add test coverage for any new features or bugfixes, and make sure to run `npm run prettier` before submitting a PR to ensure code consistency.
+
 ## Credits
 
 Inspired by [mongo-sanitize](https://github.com/vkarpov15/mongo-sanitize).
