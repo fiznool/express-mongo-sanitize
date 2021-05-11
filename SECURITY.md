@@ -6,8 +6,8 @@ The following table describes the versions of this project that are currently su
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.x   | :white_check_mark:   |
-| 1.x   | :x:                  |
+| 2.x     | :white_check_mark: |
+| 1.x     | :x:                |
 
 ## Responsible disclosure security policy
 

@@ -13,48 +13,52 @@ const callTracker = () => {
     },
     call(...args) {
       callStack.push(args);
-    }
-  }
-}
+    },
+  };
+};
 
-describe('Express Mongo Sanitize', function() {
-  describe('Remove Data', function() {
+describe('Express Mongo Sanitize', function () {
+  describe('Remove Data', function () {
     const app = express();
-    app.use(bodyParser.urlencoded({extended: true}));
+    app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     app.use(sanitize());
 
-    app.post('/body', function(req, res){
+    app.post('/body', function (req, res) {
       res.status(200).json({
         body: req.body,
       });
     });
 
-    app.post('/headers', function (req, res){
+    app.post('/headers', function (req, res) {
       res.status(200).json({
-        headers: req.headers
+        headers: req.headers,
       });
     });
 
-    app.get('/query', function(req, res){
+    app.get('/query', function (req, res) {
       res.status(200).json({
-        query: req.query
+        query: req.query,
       });
     });
 
-    describe('Top-level object', function() {
-      it('should sanitize the query string', function(done) {
+    describe('Top-level object', function () {
+      it('should sanitize the query string', function (done) {
         request(app)
           .get('/query?q=search&$where=malicious&dotted.data=some_data')
           .set('Accept', 'application/json')
-          .expect(200, {
-            query: {
-              q: 'search'
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              query: {
+                q: 'search',
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a JSON body', function(done) {
+      it('should sanitize a JSON body', function (done) {
         request(app)
           .post('/body')
           .send({
@@ -64,21 +68,25 @@ describe('Express Mongo Sanitize', function() {
             even: null,
             stop: undefined,
             $where: 'malicious',
-            'dotted.data': 'some_data'
+            'dotted.data': 'some_data',
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              q: 'search',
-              is: true,
-              and: 1,
-              even: null
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                q: 'search',
+                is: true,
+                and: 1,
+                even: null,
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize HTTP headers', function(done) {
+      it('should sanitize HTTP headers', function (done) {
         request(app)
           .post('/headers')
           .set({
@@ -87,164 +95,200 @@ describe('Express Mongo Sanitize', function() {
             and: 1,
             even: null,
             $where: 'malicious',
-            'dotted.data': 'some_data'
+            'dotted.data': 'some_data',
           })
           .expect(200)
-          .expect(function(res) {
+          .expect(function (res) {
             expect(res.body.headers).to.include({
               q: 'search',
               is: 'true',
               and: '1',
-              even: 'null'
-            })
+              even: 'null',
+            });
           })
           .end(done);
       });
 
-      it('should sanitize a form url-encoded body', function(done) {
+      it('should sanitize a form url-encoded body', function (done) {
         request(app)
           .post('/body')
           .send('q=search&$where=malicious&dotted.data=some_data')
           .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              q: 'search'
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                q: 'search',
+              },
+            },
+            done,
+          );
       });
     });
 
-    describe('Nested Object', function() {
-      it('should sanitize a nested object in the query string', function(done) {
+    describe('Nested Object', function () {
+      it('should sanitize a nested object in the query string', function (done) {
         request(app)
           .get('/query?username[$gt]=foo&username[dotted.data]=some_data')
           .set('Accept', 'application/json')
-          .expect(200, {
-            query: {
-              username: {}
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              query: {
+                username: {},
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a JSON body', function(done) {
+      it('should sanitize a nested object in a JSON body', function (done) {
         request(app)
           .post('/body')
           .send({
             username: {
               $gt: 'foo',
-              'dotted.data': 'some_data'
-            }
+              'dotted.data': 'some_data',
+            },
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: {}
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: {},
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a form url-encoded body', function(done) {
+      it('should sanitize a nested object in a form url-encoded body', function (done) {
         request(app)
           .post('/body')
           .send('username[$gt]=foo&username[dotted.data]=some_data')
           .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: {}
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: {},
+              },
+            },
+            done,
+          );
       });
     });
 
-    describe('Nested Object inside an Array', function() {
-      it('should sanitize a nested object in the query string', function(done) {
+    describe('Nested Object inside an Array', function () {
+      it('should sanitize a nested object in the query string', function (done) {
         request(app)
           .get('/query?username[0][$gt]=foo&username[0][dotted.data]=some_data')
           .set('Accept', 'application/json')
-          .expect(200, {
-            query: {
-              username: [{}]
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              query: {
+                username: [{}],
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a JSON body', function(done) {
+      it('should sanitize a nested object in a JSON body', function (done) {
         request(app)
           .post('/body')
           .send({
-            username: [{
-              $gt: 'foo',
-              'dotted.data': 'some_data'
-            }]
+            username: [
+              {
+                $gt: 'foo',
+                'dotted.data': 'some_data',
+              },
+            ],
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: [{}]
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: [{}],
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a form url-encoded body', function(done) {
+      it('should sanitize a nested object in a form url-encoded body', function (done) {
         request(app)
           .post('/body')
           .send('username[0][$gt]=foo&username[0][dotted.data]=some_data')
           .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: [{}]
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: [{}],
+              },
+            },
+            done,
+          );
       });
     });
   });
 
-  describe('Preserve Data', function() {
+  describe('Preserve Data', function () {
     const app = express();
-    app.use(bodyParser.urlencoded({extended: true}));
+    app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
-    app.use(sanitize({
-      replaceWith: '_'
-    }));
+    app.use(
+      sanitize({
+        replaceWith: '_',
+      }),
+    );
 
-    app.post('/body', function(req, res){
+    app.post('/body', function (req, res) {
       res.status(200).json({
-        body: req.body
+        body: req.body,
       });
     });
 
-    app.post('/headers', function (req, res){
+    app.post('/headers', function (req, res) {
       res.status(200).json({
-        headers: req.headers
+        headers: req.headers,
       });
     });
 
-    app.get('/query', function(req, res){
+    app.get('/query', function (req, res) {
       res.status(200).json({
-        query: req.query
+        query: req.query,
       });
     });
 
-    describe('Top-level object', function() {
-      it('should sanitize the query string', function(done) {
+    describe('Top-level object', function () {
+      it('should sanitize the query string', function (done) {
         request(app)
           .get('/query?q=search&$where=malicious&dotted.data=some_data')
           .set('Accept', 'application/json')
-          .expect(200, {
-            query: {
-              q: 'search',
-              _where: 'malicious',
-              dotted_data: 'some_data'
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              query: {
+                q: 'search',
+                _where: 'malicious',
+                dotted_data: 'some_data',
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a JSON body', function(done) {
+      it('should sanitize a JSON body', function (done) {
         request(app)
           .post('/body')
           .send({
@@ -254,23 +298,27 @@ describe('Express Mongo Sanitize', function() {
             even: null,
             stop: undefined,
             $where: 'malicious',
-            'dotted.data': 'some_data'
+            'dotted.data': 'some_data',
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              q: 'search',
-              is: true,
-              and: 1,
-              even: null,
-              _where: 'malicious',
-              dotted_data: 'some_data'
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                q: 'search',
+                is: true,
+                and: 1,
+                even: null,
+                _where: 'malicious',
+                dotted_data: 'some_data',
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize HTTP headers', function(done) {
+      it('should sanitize HTTP headers', function (done) {
         request(app)
           .post('/headers')
           .set({
@@ -279,174 +327,214 @@ describe('Express Mongo Sanitize', function() {
             and: 1,
             even: null,
             $where: 'malicious',
-            'dotted.data': 'some_data'
+            'dotted.data': 'some_data',
           })
-          .expect(function(res) {
+          .expect(function (res) {
             expect(res.body.headers).to.include({
               q: 'search',
               is: 'true',
               and: '1',
               even: 'null',
               _where: 'malicious',
-              dotted_data: 'some_data'
-            })
+              dotted_data: 'some_data',
+            });
           })
           .end(done);
       });
 
-      it('should sanitize a form url-encoded body', function(done) {
+      it('should sanitize a form url-encoded body', function (done) {
         request(app)
           .post('/body')
           .send('q=search&$where=malicious&dotted.data=some_data')
           .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              q: 'search',
-              _where: 'malicious',
-              dotted_data: 'some_data'
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                q: 'search',
+                _where: 'malicious',
+                dotted_data: 'some_data',
+              },
+            },
+            done,
+          );
       });
     });
 
-    describe('Nested Object', function() {
-      it('should sanitize a nested object in the query string', function(done) {
+    describe('Nested Object', function () {
+      it('should sanitize a nested object in the query string', function (done) {
         request(app)
           .get('/query?username[$gt]=foo&username[dotted.data]=some_data')
           .set('Accept', 'application/json')
-          .expect(200, {
-            query: {
-              username: {
-                _gt: 'foo',
-                dotted_data: 'some_data'
-              }
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              query: {
+                username: {
+                  _gt: 'foo',
+                  dotted_data: 'some_data',
+                },
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a JSON body', function(done) {
+      it('should sanitize a nested object in a JSON body', function (done) {
         request(app)
           .post('/body')
           .send({
             username: {
               $gt: 'foo',
-              'dotted.data': 'some_data'
-            }
+              'dotted.data': 'some_data',
+            },
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: {
-                _gt: 'foo',
-                dotted_data: 'some_data'
-              }
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: {
+                  _gt: 'foo',
+                  dotted_data: 'some_data',
+                },
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a form url-encoded body', function(done) {
+      it('should sanitize a nested object in a form url-encoded body', function (done) {
         request(app)
           .post('/body')
           .send('username[$gt]=foo&username[dotted.data]=some_data')
           .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: {
-                _gt: 'foo',
-                dotted_data: 'some_data'
-              }
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: {
+                  _gt: 'foo',
+                  dotted_data: 'some_data',
+                },
+              },
+            },
+            done,
+          );
       });
     });
 
-    describe('Nested Object inside an Array', function() {
-      it('should sanitize a nested object in the query string', function(done) {
+    describe('Nested Object inside an Array', function () {
+      it('should sanitize a nested object in the query string', function (done) {
         request(app)
           .get('/query?username[0][$gt]=foo&username[0][dotted.data]=some_data')
           .set('Accept', 'application/json')
-          .expect(200, {
-            query: {
-              username: [{
-                _gt: 'foo',
-                dotted_data: 'some_data'
-              }]
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              query: {
+                username: [
+                  {
+                    _gt: 'foo',
+                    dotted_data: 'some_data',
+                  },
+                ],
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a JSON body', function(done) {
+      it('should sanitize a nested object in a JSON body', function (done) {
         request(app)
           .post('/body')
           .send({
-            username: [{
-              $gt: 'foo',
-              'dotted.data': 'some_data'
-            }]
+            username: [
+              {
+                $gt: 'foo',
+                'dotted.data': 'some_data',
+              },
+            ],
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: [{
-                _gt: 'foo',
-                dotted_data: 'some_data'
-              }]
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: [
+                  {
+                    _gt: 'foo',
+                    dotted_data: 'some_data',
+                  },
+                ],
+              },
+            },
+            done,
+          );
       });
 
-      it('should sanitize a nested object in a form url-encoded body', function(done) {
+      it('should sanitize a nested object in a form url-encoded body', function (done) {
         request(app)
           .post('/body')
           .send('username[0][$gt]=foo&username[0][dotted.data]=some_data')
           .set('Content-Type', 'application/x-www-form-urlencoded')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: [{
-                _gt: 'foo',
-                dotted_data: 'some_data'
-              }]
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: [
+                  {
+                    _gt: 'foo',
+                    dotted_data: 'some_data',
+                  },
+                ],
+              },
+            },
+            done,
+          );
       });
     });
 
-    describe('Nested Object inside one with prohibited chars', function() {
-      it('should sanitize a nested object inside one with prohibited chars in a JSON body', function(done) {
+    describe('Nested Object inside one with prohibited chars', function () {
+      it('should sanitize a nested object inside one with prohibited chars in a JSON body', function (done) {
         request(app)
           .post('/body')
           .send({
             username: {
               $gt: 'foo',
               'dotted.data': {
-                'more.dotted.data': 'some_data'
-              }
-            }
+                'more.dotted.data': 'some_data',
+              },
+            },
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              username: {
-                _gt: 'foo',
-                dotted_data: {
-                  'more_dotted_data': 'some_data'
-                }
-              }
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                username: {
+                  _gt: 'foo',
+                  dotted_data: {
+                    more_dotted_data: 'some_data',
+                  },
+                },
+              },
+            },
+            done,
+          );
       });
     });
 
-    describe('prototype pollution', function() {
+    describe('prototype pollution', function () {
       const createApp = (options) => {
         const app = express();
-        app.use(bodyParser.urlencoded({extended: true}));
+        app.use(bodyParser.urlencoded({ extended: true }));
         app.use(bodyParser.json());
         app.use(sanitize(options));
 
@@ -454,215 +542,253 @@ describe('Express Mongo Sanitize', function() {
           // should not inject valued
           expect(req.body.injected).to.be.undefined;
           res.status(200).json({
-            body: req.body
+            body: req.body,
           });
         });
         return app;
-      }
+      };
       it('should not set __proto__ property', function (done) {
         const app = createApp({
-          replaceWith: "_"
+          replaceWith: '_',
         });
         request(app)
           .post('/body')
           .send({
             // replace $ with _
             $_proto__: {
-              injected: "injected value"
+              injected: 'injected value',
             },
             query: {
-              q: 'search'
-            }
+              q: 'search',
+            },
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              query: {
-                q: 'search'
-              }
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                query: {
+                  q: 'search',
+                },
+              },
+            },
+            done,
+          );
       });
       it('should not set constructor property', function (done) {
         const app = createApp({
-          replaceWith: "c"
+          replaceWith: 'c',
         });
         request(app)
           .post('/body')
           .send({
             // replace $ with c
             $onstructor: {
-              injected: "injected value"
+              injected: 'injected value',
             },
             query: {
-              q: 'search'
-            }
+              q: 'search',
+            },
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              query: {
-                q: 'search'
-              }
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                query: {
+                  q: 'search',
+                },
+              },
+            },
+            done,
+          );
       });
       it('should not set prototype property', function (done) {
         const app = createApp({
-          replaceWith: "p"
+          replaceWith: 'p',
         });
         request(app)
           .post('/body')
           .send({
             // replace $ with empty p
             $rototype: {
-              injected: "injected value"
+              injected: 'injected value',
             },
             query: {
-              q: 'search'
-            }
+              q: 'search',
+            },
           })
           .set('Content-Type', 'application/json')
           .set('Accept', 'application/json')
-          .expect(200, {
-            body: {
-              query: {
-                q: 'search'
-              }
-            }
-          }, done);
+          .expect(
+            200,
+            {
+              body: {
+                query: {
+                  q: 'search',
+                },
+              },
+            },
+            done,
+          );
       });
     });
   });
 
-  describe('Preserve Data: prohibited characters', function() {
-    it('should not allow data to be replaced with a `$`', function(done) {
+  describe('Preserve Data: prohibited characters', function () {
+    it('should not allow data to be replaced with a `$`', function (done) {
       const app = express();
-      app.use(bodyParser.urlencoded({extended: true}));
-      app.use(sanitize({
-        replaceWith: '$'
-      }));
+      app.use(bodyParser.urlencoded({ extended: true }));
+      app.use(
+        sanitize({
+          replaceWith: '$',
+        }),
+      );
 
-      app.get('/query', function(req, res){
+      app.get('/query', function (req, res) {
         res.status(200).json({
-          query: req.query
+          query: req.query,
         });
       });
       request(app)
         .get('/query?q=search&$where=malicious&dotted.data=some_data')
         .set('Accept', 'application/json')
-        .expect(200, {
-          query: {
-            q: 'search'
-          }
-        }, done);
+        .expect(
+          200,
+          {
+            query: {
+              q: 'search',
+            },
+          },
+          done,
+        );
     });
 
-    it('should not allow data to be replaced with a `.`', function(done) {
+    it('should not allow data to be replaced with a `.`', function (done) {
       const app = express();
-      app.use(bodyParser.urlencoded({extended: true}));
-      app.use(sanitize({
-        replaceWith: '.'
-      }));
+      app.use(bodyParser.urlencoded({ extended: true }));
+      app.use(
+        sanitize({
+          replaceWith: '.',
+        }),
+      );
 
-      app.get('/query', function(req, res){
+      app.get('/query', function (req, res) {
         res.status(200).json({
-          query: req.query
+          query: req.query,
         });
       });
       request(app)
         .get('/query?q=search&$where=malicious&dotted.data=some_data')
         .set('Accept', 'application/json')
-        .expect(200, {
-          query: {
-            q: 'search'
-          }
-        }, done);
+        .expect(
+          200,
+          {
+            query: {
+              q: 'search',
+            },
+          },
+          done,
+        );
     });
   });
 
-  describe('Has Prohibited Keys', function() {
-    it('should return true if the object has a key beginning with a `$`', function() {
+  describe('Has Prohibited Keys', function () {
+    it('should return true if the object has a key beginning with a `$`', function () {
       const input = {
-        $prohibited: 'key'
+        $prohibited: 'key',
       };
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return true if the object has a key containing a `.`', function() {
+    it('should return true if the object has a key containing a `.`', function () {
       const input = {
-        'prohibited.key': 'value'
+        'prohibited.key': 'value',
       };
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return true if the object has a nested key beginning with a `$`', function() {
+    it('should return true if the object has a nested key beginning with a `$`', function () {
       const input = {
         nested: {
-          $prohibited: 'key'
-        }
+          $prohibited: 'key',
+        },
       };
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return true if the object has a nested key containing a `.`', function() {
+    it('should return true if the object has a nested key containing a `.`', function () {
       const input = {
         nested: {
-          'prohibited.key': 'value'
-        }
+          'prohibited.key': 'value',
+        },
       };
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return true if the array contains an object with a key beginning with a `$`', function() {
-      const input = [{
-        $prohibited: 'key'
-      }];
+    it('should return true if the array contains an object with a key beginning with a `$`', function () {
+      const input = [
+        {
+          $prohibited: 'key',
+        },
+      ];
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return true if the array contains an object with a key containing a `.`', function() {
-      const input = [{
-        'prohibited.key': 'value'
-      }];
+    it('should return true if the array contains an object with a key containing a `.`', function () {
+      const input = [
+        {
+          'prohibited.key': 'value',
+        },
+      ];
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return true if the payload contains a deeply nested object with a key beginning with a `$`', function() {
-      const input = [{
-        some: {
-          deeply: [{
-            nested: {
-              $prohibited: 'key'
-            }
-          }]
-        }
-      }];
+    it('should return true if the payload contains a deeply nested object with a key beginning with a `$`', function () {
+      const input = [
+        {
+          some: {
+            deeply: [
+              {
+                nested: {
+                  $prohibited: 'key',
+                },
+              },
+            ],
+          },
+        },
+      ];
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return true if the payload contains a deeply nested object with a key containing a `.`', function() {
-      const input = [{
-        some: {
-          deeply: [{
-            nested: {
-              'prohibited..key': 'key'
-            }
-          }]
-        }
-      }];
+    it('should return true if the payload contains a deeply nested object with a key containing a `.`', function () {
+      const input = [
+        {
+          some: {
+            deeply: [
+              {
+                nested: {
+                  'prohibited..key': 'key',
+                },
+              },
+            ],
+          },
+        },
+      ];
       expect(sanitize.has(input)).to.be.true;
     });
 
-    it('should return false if the payload doesn\'t contain any prohibited characters', function() {
+    it("should return false if the payload doesn't contain any prohibited characters", function () {
       const input = {
         some: {
-          nested: [{
-            data: 'panda'
-          }]
-        }
+          nested: [
+            {
+              data: 'panda',
+            },
+          ],
+        },
       };
       expect(sanitize.has(input)).to.be.false;
     });
@@ -672,48 +798,56 @@ describe('Express Mongo Sanitize', function() {
     it('should not call onSanitize if the object is valid', function (done) {
       const tracker = callTracker();
       const app = express();
-      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.urlencoded({ extended: true }));
       app.use(bodyParser.json());
-      app.use(sanitize({
-        dryRun: true,
-        onSanitize(arg) {
-          tracker.call(arg);
-        }
-      }));
+      app.use(
+        sanitize({
+          dryRun: true,
+          onSanitize(arg) {
+            tracker.call(arg);
+          },
+        }),
+      );
       app.post('/body', function (req, res) {
         res.status(200).json({
-          body: req.body
+          body: req.body,
         });
       });
       request(app)
         .post('/body')
         .send({
-          q: 'search'
+          q: 'search',
         })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200, {
-          body: {
-            q: 'search',
-          }
-        }, (error) => {
-          expect(tracker.report()).to.have.lengthOf(0);
-          done(error);
-        });
+        .expect(
+          200,
+          {
+            body: {
+              q: 'search',
+            },
+          },
+          (error) => {
+            expect(tracker.report()).to.have.lengthOf(0);
+            done(error);
+          },
+        );
     });
     it('should call onSanitize if the object has a malicious key', function (done) {
       const tracker = callTracker();
       const app = express();
-      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.urlencoded({ extended: true }));
       app.use(bodyParser.json());
-      app.use(sanitize({
-        onSanitize(arg) {
-          tracker.call(arg);
-        }
-      }));
+      app.use(
+        sanitize({
+          onSanitize(arg) {
+            tracker.call(arg);
+          },
+        }),
+      );
       app.post('/body', function (req, res) {
         res.status(200).json({
-          body: req.body
+          body: req.body,
         });
       });
       request(app)
@@ -725,39 +859,45 @@ describe('Express Mongo Sanitize', function() {
           even: null,
           stop: undefined,
           $where: 'malicious',
-          'dotted.data': 'some_data'
+          'dotted.data': 'some_data',
         })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200, {
-          body: {
-            q: 'search',
-            is: true,
-            and: 1,
-            even: null
-          }
-        }, (error) => {
-          const callStack = tracker.report();
-          expect(callStack).to.have.lengthOf(1);
-          const calledFirstArgument = callStack[0][0];
-          expect(calledFirstArgument).to.have.property("req");
-          expect(calledFirstArgument).to.have.property("key", "body");
-          done(error);
-        });
-    })
+        .expect(
+          200,
+          {
+            body: {
+              q: 'search',
+              is: true,
+              and: 1,
+              even: null,
+            },
+          },
+          (error) => {
+            const callStack = tracker.report();
+            expect(callStack).to.have.lengthOf(1);
+            const calledFirstArgument = callStack[0][0];
+            expect(calledFirstArgument).to.have.property('req');
+            expect(calledFirstArgument).to.have.property('key', 'body');
+            done(error);
+          },
+        );
+    });
   });
   describe('dryRun', function () {
     it('should not sanitized if the object has a malicious key', function (done) {
       const tracker = callTracker();
       const app = express();
-      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.urlencoded({ extended: true }));
       app.use(bodyParser.json());
-      app.use(sanitize({
-        dryRun: true
-      }));
+      app.use(
+        sanitize({
+          dryRun: true,
+        }),
+      );
       app.post('/body', function (req, res) {
         res.status(200).json({
-          body: req.body
+          body: req.body,
         });
       });
       request(app)
@@ -768,35 +908,41 @@ describe('Express Mongo Sanitize', function() {
           and: 1,
           even: null,
           $where: 'malicious',
-          'dotted.data': 'some_data'
+          'dotted.data': 'some_data',
         })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200, {
-          body: {
-            q: 'search',
-            is: true,
-            and: 1,
-            even: null,
-            $where: 'malicious',
-            'dotted.data': 'some_data'
-          }
-        }, done);
-    })
+        .expect(
+          200,
+          {
+            body: {
+              q: 'search',
+              is: true,
+              and: 1,
+              even: null,
+              $where: 'malicious',
+              'dotted.data': 'some_data',
+            },
+          },
+          done,
+        );
+    });
     it('should not sanitized, but call onSanitize if the object has a malicious key', function (done) {
       const tracker = callTracker();
       const app = express();
-      app.use(bodyParser.urlencoded({extended: true}));
+      app.use(bodyParser.urlencoded({ extended: true }));
       app.use(bodyParser.json());
-      app.use(sanitize({
-        dryRun: true,
-        onSanitize(arg) {
-          tracker.call(arg);
-        }
-      }));
+      app.use(
+        sanitize({
+          dryRun: true,
+          onSanitize(arg) {
+            tracker.call(arg);
+          },
+        }),
+      );
       app.post('/body', function (req, res) {
         res.status(200).json({
-          body: req.body
+          body: req.body,
         });
       });
       request(app)
@@ -807,26 +953,30 @@ describe('Express Mongo Sanitize', function() {
           and: 1,
           even: null,
           $where: 'malicious',
-          'dotted.data': 'some_data'
+          'dotted.data': 'some_data',
         })
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
-        .expect(200, {
-          body: {
-            q: 'search',
-            is: true,
-            and: 1,
-            even: null,
-            $where: 'malicious',
-            'dotted.data': 'some_data'
-          }
-        }, (error) => {
-          const callStack = tracker.report();
-          expect(callStack).to.have.lengthOf(1);
-          const calledFirstArgument = callStack[0][0];
-          expect(calledFirstArgument).to.have.property("key", "body");
-          done(error);
-        });
+        .expect(
+          200,
+          {
+            body: {
+              q: 'search',
+              is: true,
+              and: 1,
+              even: null,
+              $where: 'malicious',
+              'dotted.data': 'some_data',
+            },
+          },
+          (error) => {
+            const callStack = tracker.report();
+            expect(callStack).to.have.lengthOf(1);
+            const calledFirstArgument = callStack[0][0];
+            expect(calledFirstArgument).to.have.property('key', 'body');
+            done(error);
+          },
+        );
     });
   });
 });

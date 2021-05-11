@@ -10,7 +10,8 @@
   ],
   "scripts": {
     "lint": "eslint \"**/*.js\" --fix",
-    "test": "mocha test.js && npm run type-check",
+    "prettier": "prettier --write .",
+    "test": "tsd && prettier --check . && mocha test.js",
     "type-check": "tsd"
   },
   "engines": {
@@ -41,8 +42,8 @@
     "eslint": "^7.17.0",
     "express": "^4.17.1",
     "mocha": "^8.2.1",
+    "prettier": "^2.3.0",
     "supertest": "^6.0.1",
     "tsd": "^0.14.0"
-  },
-  "dependencies": {}
+  }
 }

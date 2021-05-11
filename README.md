@@ -8,10 +8,9 @@ Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Ope
 [![Dependency Status](https://david-dm.org/fiznool/express-mongo-sanitize.svg)](https://david-dm.org/fiznool/express-mongo-sanitize)
 [![devDependency Status](https://david-dm.org/fiznool/express-mongo-sanitize/dev-status.svg)](https://david-dm.org/fiznool/express-mongo-sanitize#info=devDependencies)
 
-
 ## Installation
 
-``` bash
+```bash
 npm install express-mongo-sanitize
 ```
 
@@ -19,24 +18,25 @@ npm install express-mongo-sanitize
 
 Add as a piece of express middleware, before defining your routes.
 
-``` js
+```js
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoSanitize = require('express-mongo-sanitize');
 
 const app = express();
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // To remove data, use:
 app.use(mongoSanitize());
 
 // Or, to replace prohibited characters with _, use:
-app.use(mongoSanitize({
-  replaceWith: '_'
-}));
-
+app.use(
+  mongoSanitize({
+    replaceWith: '_',
+  }),
+);
 ```
 
 ### `onSanitize`
@@ -44,11 +44,13 @@ app.use(mongoSanitize({
 `onSanitize` callback is called after the request's value was sanitized.
 
 ```js
-app.use(mongoSanitize({
-  onSanitize: ({ req, key }) => {
-    console.warn(`This request[${key}] is sanitized`, req);
-  }
-}));
+app.use(
+  mongoSanitize({
+    onSanitize: ({ req, key }) => {
+      console.warn(`This request[${key}] is sanitized`, req);
+    },
+  }),
+);
 ```
 
 ### `dryRun`
@@ -56,19 +58,21 @@ app.use(mongoSanitize({
 You can run this middleware as dry run mode.
 
 ```js
-app.use(mongoSanitize({
-  dryRun: true,
-  onSanitize: ({ req, key }) => {
-    console.warn(`[DryRun] This request[${key}] will be sanitized`, req);
-  }
-}));
+app.use(
+  mongoSanitize({
+    dryRun: true,
+    onSanitize: ({ req, key }) => {
+      console.warn(`[DryRun] This request[${key}] will be sanitized`, req);
+    },
+  }),
+);
 ```
 
 ### Node Modules API
 
 You can also bypass the middleware and use the module directly:
 
-``` js
+```js
 const mongoSanitize = require('express-mongo-sanitize');
 
 const payload = {...};
@@ -98,7 +102,7 @@ See the spec file for more examples.
 
 ## Why?
 
-Object keys starting with a `$` or containing a `.` are _reserved_ for use by MongoDB as operators. Without this sanitization,  malicious users could send an object containing a `$` operator, or including a `.`, which could change the context of a database operation. Most notorious is the `$where` operator, which can execute arbitrary JavaScript on the database.
+Object keys starting with a `$` or containing a `.` are _reserved_ for use by MongoDB as operators. Without this sanitization, malicious users could send an object containing a `$` operator, or including a `.`, which could change the context of a database operation. Most notorious is the `$where` operator, which can execute arbitrary JavaScript on the database.
 
 The best way to prevent this is to sanitize the received data, and remove any offending keys, or replace the characters with a 'safe' one.
 

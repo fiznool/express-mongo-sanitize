@@ -9,26 +9,24 @@ function isPlainObject(obj) {
 
 function withEach(target, cb) {
   (function act(obj) {
-    if(Array.isArray(obj)) {
+    if (Array.isArray(obj)) {
       obj.forEach(act);
-
-    } else if(isPlainObject(obj)) {
-      Object.keys(obj).forEach(function(key) {
+    } else if (isPlainObject(obj)) {
+      Object.keys(obj).forEach(function (key) {
         const val = obj[key];
         const resp = cb(obj, val, key);
-        if(resp.shouldRecurse) {
+        if (resp.shouldRecurse) {
           act(obj[resp.key || key]);
         }
       });
     }
   })(target);
-
 }
 
 function has(target) {
   let hasProhibited = false;
-  withEach(target, function(obj, val, key) {
-    if(TEST_REGEX.test(key)) {
+  withEach(target, function (obj, val, key) {
+    if (TEST_REGEX.test(key)) {
       hasProhibited = true;
       return { shouldRecurse: false };
     } else {
@@ -39,33 +37,37 @@ function has(target) {
   return hasProhibited;
 }
 
-function _sanitize(target, options){
+function _sanitize(target, options) {
   let isSanitized = false;
   let replaceWith = null;
   let dryRun = Boolean(options.dryRun);
-  if(!(TEST_REGEX.test(options.replaceWith))) {
+  if (!TEST_REGEX.test(options.replaceWith)) {
     replaceWith = options.replaceWith;
   }
 
-  withEach(target, function(obj, val, key) {
+  withEach(target, function (obj, val, key) {
     let shouldRecurse = true;
 
-    if(TEST_REGEX.test(key)) {
+    if (TEST_REGEX.test(key)) {
       isSanitized = true;
       // if dryRun is enabled, do not modify the target
       if (dryRun) {
         return {
           shouldRecurse: shouldRecurse,
-          key: key
+          key: key,
         };
       }
       delete obj[key];
-      if(replaceWith) {
+      if (replaceWith) {
         key = key.replace(REPLACE_REGEX, replaceWith);
         // Avoid to set __proto__ and constructor.prototype
         // https://portswigger.net/daily-swig/prototype-pollution-the-dangerous-and-underrated-vulnerability-impacting-javascript-applications
         // https://snyk.io/vuln/SNYK-JS-LODASH-73638
-        if (key !== "__proto__" && key !== "constructor" && key !== "prototype") {
+        if (
+          key !== '__proto__' &&
+          key !== 'constructor' &&
+          key !== 'prototype'
+        ) {
           obj[key] = val;
         }
       } else {
@@ -75,14 +77,14 @@ function _sanitize(target, options){
 
     return {
       shouldRecurse: shouldRecurse,
-      key: key
+      key: key,
     };
   });
 
   return {
     isSanitized,
-    target
-  }
+    target,
+  };
 }
 
 function sanitize(target, options) {
@@ -94,17 +96,17 @@ function sanitize(target, options) {
  * @returns {function}
  */
 function middleware(options = {}) {
-  const hasOnSanitize = typeof options.onSanitize === "function";
-  return function(req, res, next) {
-    ['body', 'params', 'headers', 'query'].forEach(function(key) {
-      if(req[key]) {
+  const hasOnSanitize = typeof options.onSanitize === 'function';
+  return function (req, res, next) {
+    ['body', 'params', 'headers', 'query'].forEach(function (key) {
+      if (req[key]) {
         const { target, isSanitized } = _sanitize(req[key], options);
         req[key] = target;
         if (isSanitized && hasOnSanitize) {
           options.onSanitize({
             req,
-            key
-          })
+            key,
+          });
         }
       }
     });
