@@ -1,6 +1,6 @@
 import { expectType } from 'tsd';
 import mongoSanitize from './index.js';
-import * as express from 'express';
+import express from 'express';
 import { Handler } from 'express';
 
 // middleware
