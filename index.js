@@ -1,10 +1,15 @@
 'use strict';
 
 const TEST_REGEX = /^\$|\./;
+const TEST_REGEX_WITHOUT_DOT = /^\$/;
 const REPLACE_REGEX = /^\$|\./g;
 
 function isPlainObject(obj) {
   return typeof obj === 'object' && obj !== null;
+}
+
+function getTestRegex(allowDots) {
+  return allowDots ? TEST_REGEX_WITHOUT_DOT : TEST_REGEX;
 }
 
 function withEach(target, cb) {
@@ -23,10 +28,12 @@ function withEach(target, cb) {
   })(target);
 }
 
-function has(target) {
+function has(target, allowDots) {
+  const regex = getTestRegex(allowDots);
+
   let hasProhibited = false;
   withEach(target, function (obj, val, key) {
-    if (TEST_REGEX.test(key)) {
+    if (regex.test(key)) {
       hasProhibited = true;
       return { shouldRecurse: false };
     } else {
@@ -38,17 +45,19 @@ function has(target) {
 }
 
 function _sanitize(target, options) {
+  const regex = getTestRegex(options.allowDots);
+
   let isSanitized = false;
   let replaceWith = null;
-  let dryRun = Boolean(options.dryRun);
-  if (!TEST_REGEX.test(options.replaceWith)) {
+  const dryRun = Boolean(options.dryRun);
+  if (!regex.test(options.replaceWith) && options.replaceWith !== '.') {
     replaceWith = options.replaceWith;
   }
 
   withEach(target, function (obj, val, key) {
     let shouldRecurse = true;
 
-    if (TEST_REGEX.test(key)) {
+    if (regex.test(key)) {
       isSanitized = true;
       // if dryRun is enabled, do not modify the target
       if (dryRun) {
