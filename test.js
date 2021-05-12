@@ -1500,11 +1500,11 @@ describe('Express Mongo Sanitize, Dots included', function () {
       expect(sanitize.has(input, true)).to.be.true;
     });
 
-    it('should return true if the object has a key containing a `.`', function () {
+    it('should return false if the object has a key containing a `.`, when allowDots=true', function () {
       const input = {
         'prohibited.key': 'value',
       };
-      expect(sanitize.has(input, true)).to.be.true;
+      expect(sanitize.has(input, true)).to.be.false;
     });
 
     it('should return true if the object has a nested key beginning with a `$`', function () {
@@ -1516,13 +1516,13 @@ describe('Express Mongo Sanitize, Dots included', function () {
       expect(sanitize.has(input, true)).to.be.true;
     });
 
-    it('should return true if the object has a nested key containing a `.`', function () {
+    it('should return true if the object has a nested key containing a `.`, when allowDots=true', function () {
       const input = {
         nested: {
           'prohibited.key': 'value',
         },
       };
-      expect(sanitize.has(input, true)).to.be.true;
+      expect(sanitize.has(input, true)).to.be.false;
     });
 
     it('should return true if the array contains an object with a key beginning with a `$`', function () {
@@ -1534,13 +1534,13 @@ describe('Express Mongo Sanitize, Dots included', function () {
       expect(sanitize.has(input, true)).to.be.true;
     });
 
-    it('should return true if the array contains an object with a key containing a `.`', function () {
+    it('should return true if the array contains an object with a key containing a `.`, when allowDots=true', function () {
       const input = [
         {
           'prohibited.key': 'value',
         },
       ];
-      expect(sanitize.has(input, true)).to.be.true;
+      expect(sanitize.has(input, true)).to.be.false;
     });
 
     it('should return true if the payload contains a deeply nested object with a key beginning with a `$`', function () {
@@ -1560,7 +1560,7 @@ describe('Express Mongo Sanitize, Dots included', function () {
       expect(sanitize.has(input, true)).to.be.true;
     });
 
-    it('should return true if the payload contains a deeply nested object with a key containing a `.`', function () {
+    it('should return true if the payload contains a deeply nested object with a key containing a `.`, when allowDots=true', function () {
       const input = [
         {
           some: {
@@ -1574,7 +1574,7 @@ describe('Express Mongo Sanitize, Dots included', function () {
           },
         },
       ];
-      expect(sanitize.has(input, true)).to.be.true;
+      expect(sanitize.has(input, true)).to.be.false;
     });
 
     it("should return false if the payload doesn't contain any prohibited characters", function () {

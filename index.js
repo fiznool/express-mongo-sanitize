@@ -1,11 +1,15 @@
 'use strict';
 
-let TEST_REGEX = /^\$|\./;
+const TEST_REGEX = /^\$|\./;
 const TEST_REGEX_WITHOUT_DOT = /^\$/;
-let REPLACE_REGEX = /^\$|\./g;
+const REPLACE_REGEX = /^\$|\./g;
 
 function isPlainObject(obj) {
   return typeof obj === 'object' && obj !== null;
+}
+
+function getTestRegex(allowDots) {
+  return allowDots ? TEST_REGEX_WITHOUT_DOT : TEST_REGEX;
 }
 
 function withEach(target, cb) {
@@ -24,16 +28,14 @@ function withEach(target, cb) {
   })(target);
 }
 
+// target: 'prohibited.key': 'value',
+// allowDots: true
 function has(target, allowDots) {
-  let regex = TEST_REGEX;
-
-  if (allowDots) {
-    regex = TEST_REGEX_WITHOUT_DOT;
-  }
+  const regex = getTestRegex(allowDots);
 
   let hasProhibited = false;
   withEach(target, function (obj, val, key) {
-    if (TEST_REGEX.test(key)) {
+    if (regex.test(key)) {
       hasProhibited = true;
       return { shouldRecurse: false };
     } else {
@@ -44,19 +46,11 @@ function has(target, allowDots) {
   return hasProhibited;
 }
 
-function sanitize(target, options, regex) {
+function sanitize(target, options) {
   options = options || {};
 
   // Regex is not passed from the middleware
-  if (!regex) {
-    regex = TEST_REGEX;
-
-    if (options) {
-      if (options.allowDots) {
-        TEST_REGEX = TEST_REGEX_WITHOUT_DOT;
-      }
-    }
-  }
+  const regex = getTestRegex(options.allowDots);
 
   let replaceWith = null;
   if (!regex.test(options.replaceWith) && options.replaceWith !== '.') {
@@ -73,11 +67,7 @@ function sanitize(target, options, regex) {
         // Avoid to set __proto__ and constructor.prototype
         // https://portswigger.net/daily-swig/prototype-pollution-the-dangerous-and-underrated-vulnerability-impacting-javascript-applications
         // https://snyk.io/vuln/SNYK-JS-LODASH-73638
-        if (
-          key !== '__proto__' &&
-          key !== 'constructor' &&
-          key !== 'prototype'
-        ) {
+        if (key !== '__proto__' && key !== 'constructor' && key !== 'prototype') {
           obj[key] = val;
         }
       } else {
@@ -98,15 +88,7 @@ function middleware(options) {
   return function (req, res, next) {
     ['body', 'params', 'headers', 'query'].forEach(function (k) {
       if (req[k]) {
-        req[k] = sanitize(
-          req[k],
-          options,
-          options
-            ? options.allowDots
-              ? TEST_REGEX_WITHOUT_DOT
-              : TEST_REGEX
-            : null
-        );
+        req[k] = sanitize(req[k], options);
       }
     });
     next();
