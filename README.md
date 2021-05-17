@@ -20,13 +20,12 @@ Add as a piece of express middleware, before defining your routes.
 
 ```js
 const express = require('express');
-const bodyParser = require('body-parser');
 const mongoSanitize = require('express-mongo-sanitize');
 
 const app = express();
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // To remove data, use:
 app.use(mongoSanitize());
