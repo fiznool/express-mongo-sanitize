@@ -1,6 +1,6 @@
 {
   "name": "express-mongo-sanitize",
-  "version": "2.2.0",
+  "version": "2.0.2",
   "description": "Sanitize your express payload to prevent MongoDB operator injection.",
   "main": "index.js",
   "types": "index.d.ts",
