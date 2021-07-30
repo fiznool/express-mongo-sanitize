@@ -87,7 +87,7 @@ function _sanitize(target, options) {
   };
 }
 
-function sanitize(target, options) {
+function sanitize(target = {}, options = {}) {
   return _sanitize(target, options).target;
 }
 
