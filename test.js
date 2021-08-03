@@ -979,4 +979,30 @@ describe('Express Mongo Sanitize', function () {
         );
     });
   });
+
+  describe('sanitize', function () {
+    it('should not throw a NPE when options is not passed into the function', function () {
+      const req = {
+        body: {
+          hello: 'world',
+        },
+      };
+
+      const resp = sanitize.sanitize(req.body);
+
+      expect(resp).to.deep.equal(req.body);
+    });
+
+    it('should return successfully with option passed in', function () {
+      const req = {
+        body: {
+          hello: 'world',
+        },
+      };
+
+      const resp = sanitize.sanitize(req.body, { dryRun: true });
+
+      expect(resp).to.deep.equal(req.body);
+    });
+  });
 });
