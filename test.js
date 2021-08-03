@@ -988,9 +988,9 @@ describe('Express Mongo Sanitize', function () {
         },
       };
 
-      const resp = sanitize.sanitize(req);
+      const resp = sanitize.sanitize(req.body);
 
-      expect(resp).to.deep.equal(req);
+      expect(resp).to.deep.equal(req.body);
     });
 
     it('should return successfully with option passed in', function () {
@@ -1000,9 +1000,9 @@ describe('Express Mongo Sanitize', function () {
         },
       };
 
-      const resp = sanitize.sanitize(req, { dryRun: true });
+      const resp = sanitize.sanitize(req.body, { dryRun: true });
 
-      expect(resp).to.deep.equal(req);
+      expect(resp).to.deep.equal(req.body);
     });
   });
 });
