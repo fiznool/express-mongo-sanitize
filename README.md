@@ -2,10 +2,10 @@
 
 Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Operator Injection.
 
-[![Build Status](https://github.com/fiznool/express-mongo-sanitize/workflows/Node.js%20CI/badge.svg)](https://github.com/fiznool/express-mongo-sanitize/workflows/Node.js%20CI/badge.svg)
-[![npm version](https://img.shields.io/npm/v/express-mongo-sanitize)](https://img.shields.io/npm/v/express-mongo-sanitize)
-[![npm downloads per week](https://img.shields.io/npm/dw/express-mongo-sanitize?color=blue)](https://img.shields.io/npm/dw/express-mongo-sanitize?color=blue)
-[![Dependency Status](https://img.shields.io/librariesio/release/npm/express-mongo-sanitize)](https://img.shields.io/librariesio/release/npm/express-mongo-sanitize)
+[![Build Status](https://github.com/fiznool/express-mongo-sanitize/workflows/Node.js%20CI/badge.svg)](https://github.com/fiznool/express-mongo-sanitize/actions/workflows/nodejs.yml)
+[![npm version](https://img.shields.io/npm/v/express-mongo-sanitize)](https://www.npmjs.com/package/express-mongo-sanitize)
+[![npm downloads per week](https://img.shields.io/npm/dw/express-mongo-sanitize?color=blue)](https://www.npmjs.com/package/express-mongo-sanitize)
+![Dependency Status](https://img.shields.io/librariesio/release/npm/express-mongo-sanitize)
 
 ## What is this module for?
 
