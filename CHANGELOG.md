@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.0] - 2022-01-14
+
+### Added
+
+- New `config` option:
+  - `allowDots` boolean: if set, allows dots in the user-supplied data #41
+
+### Fixed
+
+- Prevent null pointer exception when using `dryRun` option #88
+
 ## [2.1.0] - 2021-05-11
 
 ### Added
@@ -81,6 +92,7 @@ Note that if you weren't previously expecting headers to be sanitized, this is c
 
 Initial Release.
 
+[2.2.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/fiznool/express-mongo-sanitize/compare/v2.0.2...v2.1.0
 [2.0.2]: https://github.com/fiznool/express-mongo-sanitize/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/fiznool/express-mongo-sanitize/compare/v2.0.0...v2.0.1
