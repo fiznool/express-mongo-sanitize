@@ -5,6 +5,7 @@ declare namespace ExpressMongoSanitize {
     replaceWith?: string;
     onSanitize?: (params: { key: string; req: Request }) => void;
     dryRun?: boolean;
+    allowDots?: boolean;
   }
 }
 
@@ -27,7 +28,10 @@ type Middleware = {
    * Check if the payload has keys with prohibited characters‘
    * @param target
    */
-  has(target: Record<string, unknown> | unknown[]): boolean;
+  has(
+    target: Record<string, unknown> | unknown[],
+    allowDots?: boolean,
+  ): boolean;
 };
 
 declare const ExpressMongoSanitize: Middleware & {

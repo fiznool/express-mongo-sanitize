@@ -37,6 +37,23 @@ app.use(
     replaceWith: '_',
   }),
 );
+
+// Or, to sanitize data that only contains $, without .(dot)
+// Can be useful for letting data pass that is meant for querying nested documents. NOTE: This may cause some problems on older versions of MongoDb
+// READ MORE: https://github.com/fiznool/express-mongo-sanitize/issues/36
+app.use(
+  mongoSanitize({
+    allowDots: true,
+  }),
+);
+
+// Both allowDots and replaceWith
+app.use(
+  mongoSanitize({
+    allowDots: true,
+    replaceWith: '_',
+  }),
+);
 ```
 
 ### `onSanitize`
@@ -85,8 +102,22 @@ mongoSanitize.sanitize(payload, {
   replaceWith: '_'
 });
 
+// Exclude sanitization of . (dot), only sanitize data that contains $. This may cause some problems on older versions of mongo db
+mongoSanitize.sanitize(payload, {
+  allowDots: true
+});
+
+// Both allowDots and replaceWith
+mongoSanitize.sanitize(payload, {
+  allowDots: true,
+  replaceWith: '_'
+});
+
 // Check if the payload has keys with prohibited characters
 const hasProhibited = mongoSanitize.has(payload);
+
+// Check if the payload has keys with prohibited characters (`.` is excluded). So if the payload only has `.` it will return false (since it doesn't see the data with `.` as a malicious data)
+const hasProhibited = mongoSanitize.has(payload, true);
 ```
 
 ## What?
