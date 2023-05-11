@@ -1,4 +1,4 @@
-# Express Mongoose Sanitize
+# Express Mongo Sanitize
 
 Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Operator Injection.
 
