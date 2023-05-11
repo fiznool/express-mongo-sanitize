@@ -9,7 +9,7 @@ Express 4.x middleware which sanitizes user-supplied data to prevent MongoDB Ope
 
 ## What is this module for?
 
-This module searches for any keys in objects that begin with a `$` sign or contain a `.`, from `req.body`, `req.query` or `req.params`. It can then either:
+This module searches for any keys in objects that begin with a `$` sign or contain a `.`, from `req.body`, `req.query`, `req.headers` or `req.params`. It can then either:
 
 - completely remove these keys and associated data from the object, or
 - replace the prohibited characters with another allowed character.
@@ -48,9 +48,9 @@ app.use(bodyParser.json());
 
 // By default, $ and . characters are removed completely from user-supplied input in the following places:
 // - req.body
+// - req.query
 // - req.params
 // - req.headers
-// - req.query
 
 // To remove data using these defaults:
 app.use(mongoSanitize());
